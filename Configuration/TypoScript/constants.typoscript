@@ -1,0 +1,17 @@
+# T3Pinpoint Constants
+
+plugin.tx_t3pinpoint {
+    settings {
+        # cat=T3Pinpoint/general/010; type=string; label=API Endpoint URL: The Pinpoint AgencyDesk API URL. Leave empty for local-only mode.
+        apiEndpoint =
+
+        # cat=T3Pinpoint/general/020; type=string; label=API Key: Your project API key from Pinpoint AgencyDesk.
+        apiKey =
+
+        # cat=T3Pinpoint/general/030; type=string; label=Project ID: Your project identifier.
+        projectId =
+
+        # cat=T3Pinpoint/general/040; type=options[bottom-right,bottom-left,top-right,top-left]; label=Widget Position: Where the feedback button appears on the page.
+        widgetPosition = bottom-right
+    }
+}

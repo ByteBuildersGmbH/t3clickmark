@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" datatype="plaintext" original="messages">
+        <body>
+            <trans-unit id="feedback.list.title" resname="feedback.list.title">
+                <source>Feedback</source>
+            </trans-unit>
+            <trans-unit id="feedback.list.empty" resname="feedback.list.empty">
+                <source>No feedback submissions yet.</source>
+            </trans-unit>
+            <trans-unit id="feedback.status.open" resname="feedback.status.open">
+                <source>Open</source>
+            </trans-unit>
+            <trans-unit id="feedback.status.in_progress" resname="feedback.status.in_progress">
+                <source>In Progress</source>
+            </trans-unit>
+            <trans-unit id="feedback.status.resolved" resname="feedback.status.resolved">
+                <source>Resolved</source>
+            </trans-unit>
+            <trans-unit id="feedback.status.closed" resname="feedback.status.closed">
+                <source>Closed</source>
+            </trans-unit>
+            <trans-unit id="feedback.priority.low" resname="feedback.priority.low">
+                <source>Low</source>
+            </trans-unit>
+            <trans-unit id="feedback.priority.medium" resname="feedback.priority.medium">
+                <source>Medium</source>
+            </trans-unit>
+            <trans-unit id="feedback.priority.high" resname="feedback.priority.high">
+                <source>High</source>
+            </trans-unit>
+            <trans-unit id="feedback.category.bug" resname="feedback.category.bug">
+                <source>Bug</source>
+            </trans-unit>
+            <trans-unit id="feedback.category.change_request" resname="feedback.category.change_request">
+                <source>Change Request</source>
+            </trans-unit>
+            <trans-unit id="feedback.category.question" resname="feedback.category.question">
+                <source>Question</source>
+            </trans-unit>
+            <trans-unit id="feedback.filter.all" resname="feedback.filter.all">
+                <source>All</source>
+            </trans-unit>
+            <trans-unit id="feedback.action.editInBackend" resname="feedback.action.editInBackend">
+                <source>Edit in Backend</source>
+            </trans-unit>
+            <trans-unit id="feedback.action.changeStatus" resname="feedback.action.changeStatus">
+                <source>Change Status</source>
+            </trans-unit>
+            <trans-unit id="feedback.action.addComment" resname="feedback.action.addComment">
+                <source>Add Comment</source>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

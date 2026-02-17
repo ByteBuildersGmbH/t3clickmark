@@ -1,0 +1,28 @@
+{
+    "name": "bytebuilders/t3pinpoint",
+    "type": "typo3-cms-extension",
+    "description": "Visual website feedback for TYPO3 agencies. Content element recognition, backend edit links, screenshot capture, and annotation tools.",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "ByteBuilders",
+            "email": "info@bytebuilders.de"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "typo3/cms-core": "^12.4 || ^13.4",
+        "typo3/cms-extbase": "^12.4 || ^13.4",
+        "typo3/cms-fluid": "^12.4 || ^13.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "ByteBuilders\\T3Pinpoint\\": "Classes/"
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "t3pinpoint"
+        }
+    }
+}

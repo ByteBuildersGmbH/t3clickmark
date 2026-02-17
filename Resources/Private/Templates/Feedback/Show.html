@@ -1,0 +1,203 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:be="http://typo3.org/ns/TYPO3/CMS/Backend/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<f:layout name="Module" />
+
+<f:section name="Content">
+
+    <!-- Back link -->
+    <div class="mb-3">
+        <f:link.action action="list" class="btn btn-sm btn-default">
+            &larr; Back to list
+        </f:link.action>
+    </div>
+
+    <!-- Header -->
+    <div class="d-flex align-items-center mb-4">
+        <h1 class="me-3 mb-0">{feedback.title}</h1>
+        <f:switch expression="{feedback.status}">
+            <f:case value="open"><span class="badge bg-primary">Open</span></f:case>
+            <f:case value="in_progress"><span class="badge bg-warning">In Progress</span></f:case>
+            <f:case value="resolved"><span class="badge bg-success">Resolved</span></f:case>
+            <f:case value="closed"><span class="badge bg-secondary">Closed</span></f:case>
+        </f:switch>
+        <f:switch expression="{feedback.priority}">
+            <f:case value="low"><span class="badge bg-info ms-1">Low</span></f:case>
+            <f:case value="medium"><span class="badge bg-warning ms-1">Medium</span></f:case>
+            <f:case value="high"><span class="badge bg-danger ms-1">High</span></f:case>
+        </f:switch>
+        <f:switch expression="{feedback.category}">
+            <f:case value="bug"><span class="badge bg-danger ms-1">Bug</span></f:case>
+            <f:case value="change_request"><span class="badge bg-info ms-1">Change Request</span></f:case>
+            <f:case value="question"><span class="badge bg-secondary ms-1">Question</span></f:case>
+        </f:switch>
+    </div>
+
+    <div class="row">
+        <!-- Left column: Screenshots -->
+        <div class="col-md-7">
+            <f:if condition="{feedback.annotatedScreenshot}">
+                <div class="card mb-3">
+                    <div class="card-header">Annotated Screenshot</div>
+                    <div class="card-body p-0">
+                        <f:image image="{feedback.annotatedScreenshot}" maxWidth="800" class="img-fluid" />
+                    </div>
+                </div>
+            </f:if>
+
+            <f:if condition="{feedback.screenshot}">
+                <div class="card mb-3">
+                    <div class="card-header">Original Screenshot</div>
+                    <div class="card-body p-0">
+                        <f:image image="{feedback.screenshot}" maxWidth="800" class="img-fluid" />
+                    </div>
+                </div>
+            </f:if>
+
+            <!-- Description -->
+            <f:if condition="{feedback.description}">
+                <div class="card mb-3">
+                    <div class="card-header">Description</div>
+                    <div class="card-body">
+                        <f:format.nl2br>{feedback.description}</f:format.nl2br>
+                    </div>
+                </div>
+            </f:if>
+        </div>
+
+        <!-- Right column: Metadata + Actions -->
+        <div class="col-md-5">
+            <!-- TYPO3 Context -->
+            <div class="card mb-3">
+                <div class="card-header">TYPO3 Context</div>
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <th>Page</th>
+                        <td>#{feedback.pageUid}</td>
+                    </tr>
+                    <f:if condition="{feedback.contentUid}">
+                        <tr>
+                            <th>Content Element</th>
+                            <td>#{feedback.contentUid} ({feedback.contentType})</td>
+                        </tr>
+                    </f:if>
+                    <f:if condition="{feedback.backendEditLink}">
+                        <tr>
+                            <th>Action</th>
+                            <td>
+                                <a href="{feedback.backendEditLink}" class="btn btn-sm btn-primary">
+                                    Edit in Backend
+                                </a>
+                            </td>
+                        </tr>
+                    </f:if>
+                    <f:if condition="{feedback.pageUrl}">
+                        <tr>
+                            <th>Page URL</th>
+                            <td><a href="{feedback.pageUrl}" target="_blank">{feedback.pageUrl}</a></td>
+                        </tr>
+                    </f:if>
+                </table>
+            </div>
+
+            <!-- Browser Info -->
+            <div class="card mb-3">
+                <div class="card-header">Browser Info</div>
+                <table class="table table-sm mb-0">
+                    <f:if condition="{feedback.browserInfo}">
+                        <tr>
+                            <th>Browser</th>
+                            <td>{feedback.browserInfo}</td>
+                        </tr>
+                    </f:if>
+                    <f:if condition="{feedback.viewport}">
+                        <tr>
+                            <th>Viewport</th>
+                            <td>{feedback.viewport}</td>
+                        </tr>
+                    </f:if>
+                    <tr>
+                        <th>Reporter</th>
+                        <td>{feedback.backendUsername}</td>
+                    </tr>
+                    <tr>
+                        <th>Submitted</th>
+                        <td><f:format.date format="d.m.Y H:i">{feedback.crdate}</f:format.date></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- External Sync -->
+            <f:if condition="{feedback.externalId}">
+                <div class="card mb-3">
+                    <div class="card-header">External Sync</div>
+                    <table class="table table-sm mb-0">
+                        <tr>
+                            <th>External ID</th>
+                            <td>
+                                <f:if condition="{feedback.externalUrl}">
+                                    <f:then>
+                                        <a href="{feedback.externalUrl}" target="_blank">{feedback.externalId}</a>
+                                    </f:then>
+                                    <f:else>{feedback.externalId}</f:else>
+                                </f:if>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </f:if>
+
+            <!-- Change Status -->
+            <div class="card mb-3">
+                <div class="card-header">Change Status</div>
+                <div class="card-body">
+                    <f:form action="updateStatus" method="post">
+                        <f:form.hidden name="feedback" value="{feedback.uid}" />
+                        <div class="input-group">
+                            <f:form.select name="status" class="form-select form-select-sm"
+                                           value="{feedback.status}">
+                                <f:form.select.option value="open">Open</f:form.select.option>
+                                <f:form.select.option value="in_progress">In Progress</f:form.select.option>
+                                <f:form.select.option value="resolved">Resolved</f:form.select.option>
+                                <f:form.select.option value="closed">Closed</f:form.select.option>
+                            </f:form.select>
+                            <f:form.submit value="Update" class="btn btn-sm btn-default" />
+                        </div>
+                    </f:form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments -->
+    <div class="card mt-3">
+        <div class="card-header">Comments</div>
+        <div class="card-body">
+            <f:if condition="{feedback.comments}">
+                <f:for each="{feedback.comments}" as="comment">
+                    <div class="border-bottom pb-2 mb-2">
+                        <strong>{comment.authorName}</strong>
+                        <small class="text-muted ms-2">
+                            <f:format.date format="d.m.Y H:i">{comment.crdate}</f:format.date>
+                        </small>
+                        <p class="mb-0 mt-1"><f:format.nl2br>{comment.comment}</f:format.nl2br></p>
+                    </div>
+                </f:for>
+            </f:if>
+
+            <!-- Add Comment Form -->
+            <f:form action="addComment" method="post" class="mt-3">
+                <f:form.hidden name="feedback" value="{feedback.uid}" />
+                <div class="mb-2">
+                    <f:form.textarea name="comment" rows="3" class="form-control"
+                                     placeholder="Add a comment..." />
+                </div>
+                <f:form.submit value="Add Comment" class="btn btn-sm btn-default" />
+            </f:form>
+        </div>
+    </div>
+
+</f:section>
+
+</html>
