@@ -17,8 +17,12 @@ CREATE TABLE tx_t3pinpoint_domain_model_feedback (
     viewport varchar(50) DEFAULT '' NOT NULL,
     css_selector varchar(1024) DEFAULT '' NOT NULL,
 
+    -- Diagnostics (console & network)
+    console_errors int(11) DEFAULT '0' NOT NULL,
+    console_warnings int(11) DEFAULT '0' NOT NULL,
+    failed_requests int(11) DEFAULT '0' NOT NULL,
+
     -- Screenshots (FAL references)
-    screenshot int(11) unsigned DEFAULT '0',
     annotated_screenshot int(11) unsigned DEFAULT '0',
 
     -- TYPO3 backend user who submitted

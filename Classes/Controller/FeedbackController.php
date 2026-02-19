@@ -52,12 +52,10 @@ class FeedbackController extends ActionController
 
         // Resolve FAL file references manually — Extbase's DataMapper
         // doesn't reliably resolve type=file TCA fields to ?FileReference.
-        $screenshotFile = $this->resolveFileReference($feedback, 'screenshot');
         $annotatedFile = $this->resolveFileReference($feedback, 'annotated_screenshot');
 
         $moduleTemplate->assignMultiple([
             'feedback' => $feedbackObj,
-            'screenshotFile' => $screenshotFile,
             'annotatedFile' => $annotatedFile,
         ]);
 

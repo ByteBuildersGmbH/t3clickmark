@@ -60,19 +60,18 @@ class FeedbackApiController
             'browser_info' => $this->formatBrowserInfo($parsedBody),
             'viewport' => $this->formatViewport($parsedBody['viewport'] ?? ''),
             'css_selector' => $parsedBody['cssSelector'] ?? '',
+            'console_errors' => (int)($parsedBody['consoleErrors'] ?? 0),
+            'console_warnings' => (int)($parsedBody['consoleWarnings'] ?? 0),
+            'failed_requests' => (int)($parsedBody['failedRequests'] ?? 0),
             'backend_user' => $backendUserId,
             'backend_username' => $parsedBody['backendUsername'] ?? '',
-            'screenshot' => 0,
             'annotated_screenshot' => 0,
         ];
 
         $connection->insert('tx_t3pinpoint_domain_model_feedback', $record);
         $feedbackUid = (int)$connection->lastInsertId();
 
-        // Handle file uploads (screenshots)
-        if (!empty($uploadedFiles['screenshot'])) {
-            $this->storeScreenshot($feedbackUid, $uploadedFiles['screenshot'], 'screenshot');
-        }
+        // Handle file upload (annotated screenshot)
         if (!empty($uploadedFiles['annotatedScreenshot'])) {
             $this->storeScreenshot($feedbackUid, $uploadedFiles['annotatedScreenshot'], 'annotated_screenshot');
         }

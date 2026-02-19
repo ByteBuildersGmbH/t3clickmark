@@ -31,8 +31,12 @@ class Feedback extends AbstractEntity
     protected string $viewport = '';
     protected string $cssSelector = '';
 
-    // Screenshots (FAL)
-    protected ?FileReference $screenshot = null;
+    // Diagnostics (console & network)
+    protected int $consoleErrors = 0;
+    protected int $consoleWarnings = 0;
+    protected int $failedRequests = 0;
+
+    // Screenshot (FAL)
     protected ?FileReference $annotatedScreenshot = null;
 
     // TYPO3 backend user
@@ -188,14 +192,34 @@ class Feedback extends AbstractEntity
         $this->cssSelector = $cssSelector;
     }
 
-    public function getScreenshot(): ?FileReference
+    public function getConsoleErrors(): int
     {
-        return $this->screenshot;
+        return $this->consoleErrors;
     }
 
-    public function setScreenshot(?FileReference $screenshot): void
+    public function setConsoleErrors(int $consoleErrors): void
     {
-        $this->screenshot = $screenshot;
+        $this->consoleErrors = $consoleErrors;
+    }
+
+    public function getConsoleWarnings(): int
+    {
+        return $this->consoleWarnings;
+    }
+
+    public function setConsoleWarnings(int $consoleWarnings): void
+    {
+        $this->consoleWarnings = $consoleWarnings;
+    }
+
+    public function getFailedRequests(): int
+    {
+        return $this->failedRequests;
+    }
+
+    public function setFailedRequests(int $failedRequests): void
+    {
+        $this->failedRequests = $failedRequests;
     }
 
     public function getAnnotatedScreenshot(): ?FileReference

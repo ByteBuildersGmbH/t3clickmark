@@ -24,8 +24,10 @@ return [
                     page_uid, content_uid, content_type, page_url, backend_edit_link,
                 --div--;Browser Info,
                     browser_info, viewport, css_selector,
-                --div--;Screenshots,
-                    screenshot, annotated_screenshot,
+                --div--;Diagnostics,
+                    console_errors, console_warnings, failed_requests,
+                --div--;Screenshot,
+                    annotated_screenshot,
                 --div--;User,
                     backend_user, backend_username,
                 --div--;External Sync,
@@ -177,12 +179,28 @@ return [
                 'readOnly' => true,
             ],
         ],
-        'screenshot' => [
-            'label' => 'Screenshot',
+        'console_errors' => [
+            'label' => 'Console Errors',
             'config' => [
-                'type' => 'file',
-                'maxitems' => 1,
-                'allowed' => 'png,jpg,jpeg,webp',
+                'type' => 'number',
+                'size' => 5,
+                'readOnly' => true,
+            ],
+        ],
+        'console_warnings' => [
+            'label' => 'Console Warnings',
+            'config' => [
+                'type' => 'number',
+                'size' => 5,
+                'readOnly' => true,
+            ],
+        ],
+        'failed_requests' => [
+            'label' => 'Failed Network Requests',
+            'config' => [
+                'type' => 'number',
+                'size' => 5,
+                'readOnly' => true,
             ],
         ],
         'annotated_screenshot' => [
