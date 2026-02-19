@@ -37,23 +37,37 @@
     <div class="row">
         <!-- Left column: Screenshots + Description -->
         <div class="col-md-7">
-            <f:if condition="{feedback.annotatedScreenshot}">
-                <div class="card mb-3">
-                    <div class="card-header">Annotated Screenshot</div>
-                    <div class="card-body p-0">
-                        <f:image image="{feedback.annotatedScreenshot}" maxWidth="800" class="img-fluid" />
-                    </div>
+            <div class="card mb-3">
+                <div class="card-header">Annotated Screenshot</div>
+                <div class="card-body p-0">
+                    <f:if condition="{annotatedFile}">
+                        <f:then>
+                            <f:image image="{annotatedFile}" maxWidth="800" class="img-fluid" />
+                        </f:then>
+                        <f:else>
+                            <div class="p-4 text-center text-muted" style="background:#f1f5f9">
+                                No annotated screenshot found in FAL
+                            </div>
+                        </f:else>
+                    </f:if>
                 </div>
-            </f:if>
+            </div>
 
-            <f:if condition="{feedback.screenshot}">
-                <div class="card mb-3">
-                    <div class="card-header">Original Screenshot</div>
-                    <div class="card-body p-0">
-                        <f:image image="{feedback.screenshot}" maxWidth="800" class="img-fluid" />
-                    </div>
+            <div class="card mb-3">
+                <div class="card-header">Original Screenshot</div>
+                <div class="card-body p-0">
+                    <f:if condition="{screenshotFile}">
+                        <f:then>
+                            <f:image image="{screenshotFile}" maxWidth="800" class="img-fluid" />
+                        </f:then>
+                        <f:else>
+                            <div class="p-4 text-center text-muted" style="background:#f1f5f9">
+                                No original screenshot found in FAL
+                            </div>
+                        </f:else>
+                    </f:if>
                 </div>
-            </f:if>
+            </div>
 
             <!-- Description -->
             <f:if condition="{feedback.description}">

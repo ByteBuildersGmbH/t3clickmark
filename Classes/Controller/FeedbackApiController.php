@@ -112,81 +112,56 @@ class FeedbackApiController
      */
     private function storeScreenshot(int $feedbackUid, $uploadedFile, string $fieldName): void
     {
-        $logger = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Log\LogManager::class)
-            ->getLogger(self::class);
-
-        try {
-            $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
-            $storage = $resourceFactory->getDefaultStorage();
-            if ($storage === null) {
-                $logger->error('T3Pinpoint: No default FAL storage configured');
-                return;
-            }
-
-            // Create target folder if it doesn't exist
-            $targetFolderPath = 'user_upload/t3pinpoint/';
-            if (!$storage->hasFolder($targetFolderPath)) {
-                $storage->createFolder('t3pinpoint', $storage->getFolder('user_upload'));
-            }
-            $targetFolder = $storage->getFolder($targetFolderPath);
-
-            // Generate a unique filename
-            $filename = sprintf('feedback_%d_%s_%s.png', $feedbackUid, $fieldName, uniqid());
-
-            // Use PSR-7 moveTo() — the standard way to persist uploaded files.
-            // This is more reliable than reading the stream, which can fail
-            // depending on the stream wrapper implementation.
-            $tempFile = GeneralUtility::tempnam('t3pin_') . '.png';
-            $uploadedFile->moveTo($tempFile);
-
-            if (!file_exists($tempFile) || filesize($tempFile) === 0) {
-                $logger->error('T3Pinpoint: Uploaded file is empty or move failed for ' . $fieldName);
-                return;
-            }
-
-            $fileSize = filesize($tempFile);
-            $file = $storage->addFile($tempFile, $targetFolder, $filename);
-
-            // addFile() moves the temp file into FAL storage, so no cleanup needed
-
-            // Create sys_file_reference linking the FAL file to the feedback record
-            $connection = GeneralUtility::makeInstance(ConnectionPool::class)
-                ->getConnectionForTable('sys_file_reference');
-
-            $connection->insert('sys_file_reference', [
-                'pid' => $this->getStoragePid(),
-                'tstamp' => time(),
-                'crdate' => time(),
-                'uid_local' => $file->getUid(),
-                'uid_foreign' => $feedbackUid,
-                'tablenames' => 'tx_t3pinpoint_domain_model_feedback',
-                'fieldname' => $fieldName,
-                'table_local' => 'sys_file',
-                'sorting_foreign' => 1,
-            ]);
-
-            // Update the feedback record's file count so Extbase resolves the relation
-            $feedbackConnection = GeneralUtility::makeInstance(ConnectionPool::class)
-                ->getConnectionForTable('tx_t3pinpoint_domain_model_feedback');
-            $feedbackConnection->update(
-                'tx_t3pinpoint_domain_model_feedback',
-                [$fieldName => 1],
-                ['uid' => $feedbackUid]
-            );
-
-            $logger->info('T3Pinpoint: Screenshot stored', [
-                'feedbackUid' => $feedbackUid,
-                'fieldName' => $fieldName,
-                'fileUid' => $file->getUid(),
-                'size' => $fileSize,
-            ]);
-        } catch (\Exception $e) {
-            $logger->error('T3Pinpoint: Failed to store screenshot: ' . $e->getMessage(), [
-                'exception' => $e,
-                'fieldName' => $fieldName,
-                'feedbackUid' => $feedbackUid,
-            ]);
+        $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
+        $storage = $resourceFactory->getDefaultStorage();
+        if ($storage === null) {
+            throw new \RuntimeException('No default FAL storage configured');
         }
+
+        // Create target folder if it doesn't exist
+        $targetFolderPath = 'user_upload/t3pinpoint/';
+        if (!$storage->hasFolder($targetFolderPath)) {
+            $storage->createFolder('t3pinpoint', $storage->getFolder('user_upload'));
+        }
+        $targetFolder = $storage->getFolder($targetFolderPath);
+
+        // Generate a unique filename
+        $filename = sprintf('feedback_%d_%s_%s.png', $feedbackUid, $fieldName, uniqid());
+
+        // Use PSR-7 moveTo() — the standard way to persist uploaded files.
+        $tempFile = GeneralUtility::tempnam('t3pin_') . '.png';
+        $uploadedFile->moveTo($tempFile);
+
+        if (!file_exists($tempFile) || filesize($tempFile) === 0) {
+            throw new \RuntimeException('Uploaded file is empty or move failed for ' . $fieldName);
+        }
+
+        $fileSize = filesize($tempFile);
+        $file = $storage->addFile($tempFile, $targetFolder, $filename);
+
+        // Create sys_file_reference linking the FAL file to the feedback record
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('sys_file_reference');
+
+        $connection->insert('sys_file_reference', [
+            'pid' => $this->getStoragePid(),
+            'tstamp' => time(),
+            'crdate' => time(),
+            'uid_local' => $file->getUid(),
+            'uid_foreign' => $feedbackUid,
+            'tablenames' => 'tx_t3pinpoint_domain_model_feedback',
+            'fieldname' => $fieldName,
+            'sorting_foreign' => 1,
+        ]);
+
+        // Update the feedback record's file count so Extbase resolves the relation
+        $feedbackConnection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_t3pinpoint_domain_model_feedback');
+        $feedbackConnection->update(
+            'tx_t3pinpoint_domain_model_feedback',
+            [$fieldName => 1],
+            ['uid' => $feedbackUid]
+        );
     }
 
     /**

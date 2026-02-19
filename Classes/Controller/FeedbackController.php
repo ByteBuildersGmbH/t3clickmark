@@ -10,6 +10,9 @@ use ByteBuilders\T3Pinpoint\Domain\Repository\FeedbackRepository;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Backend\Attribute\AsController;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
+use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Mvc\Controller\ActionController;
 use TYPO3\CMS\Extbase\Persistence\Generic\PersistenceManager;
 
@@ -46,7 +49,17 @@ class FeedbackController extends ActionController
         $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
         $feedbackObj = $this->feedbackRepository->findByUid($feedback);
-        $moduleTemplate->assign('feedback', $feedbackObj);
+
+        // Resolve FAL file references manually — Extbase's DataMapper
+        // doesn't reliably resolve type=file TCA fields to ?FileReference.
+        $screenshotFile = $this->resolveFileReference($feedback, 'screenshot');
+        $annotatedFile = $this->resolveFileReference($feedback, 'annotated_screenshot');
+
+        $moduleTemplate->assignMultiple([
+            'feedback' => $feedbackObj,
+            'screenshotFile' => $screenshotFile,
+            'annotatedFile' => $annotatedFile,
+        ]);
 
         return $moduleTemplate->renderResponse('Feedback/Show');
     }
@@ -76,5 +89,44 @@ class FeedbackController extends ActionController
         }
 
         return $this->redirect('show', null, null, ['feedback' => $feedback]);
+    }
+
+    /**
+     * Resolve a FAL file reference for a feedback record by querying
+     * sys_file_reference directly. Returns the Core FileReference or null.
+     */
+    private function resolveFileReference(int $feedbackUid, string $fieldName): ?\TYPO3\CMS\Core\Resource\FileReference
+    {
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('sys_file_reference');
+
+        // Remove all automatic restrictions (workspace, hidden, etc.)
+        // and only keep the deleted restriction to avoid conflicts
+        $queryBuilder->getRestrictions()->removeAll()->add(
+            GeneralUtility::makeInstance(\TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction::class)
+        );
+
+        $row = $queryBuilder
+            ->select('uid')
+            ->from('sys_file_reference')
+            ->where(
+                $queryBuilder->expr()->eq('uid_foreign', $queryBuilder->createNamedParameter($feedbackUid, \Doctrine\DBAL\ParameterType::INTEGER)),
+                $queryBuilder->expr()->eq('tablenames', $queryBuilder->createNamedParameter('tx_t3pinpoint_domain_model_feedback')),
+                $queryBuilder->expr()->eq('fieldname', $queryBuilder->createNamedParameter($fieldName))
+            )
+            ->setMaxResults(1)
+            ->executeQuery()
+            ->fetchAssociative();
+
+        if ($row === false) {
+            return null;
+        }
+
+        try {
+            $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
+            return $resourceFactory->getFileReferenceObject((int)$row['uid']);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }
