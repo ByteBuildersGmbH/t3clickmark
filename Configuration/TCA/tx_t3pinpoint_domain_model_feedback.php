@@ -36,6 +36,14 @@ return [
         ],
     ],
     'columns' => [
+        'crdate' => [
+            'label' => 'Created',
+            'config' => [
+                'type' => 'datetime',
+                'format' => 'datetime',
+                'readOnly' => true,
+            ],
+        ],
         'hidden' => [
             'label' => 'LLL:EXT:core/Resources/Private/Language/locallang_general.xlf:LGL.visible',
             'config' => [

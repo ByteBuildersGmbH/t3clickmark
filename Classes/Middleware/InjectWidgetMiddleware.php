@@ -10,7 +10,6 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 
 /**
@@ -74,13 +73,27 @@ class InjectWidgetMiddleware implements MiddlewareInterface
         $tsfe = $GLOBALS['TSFE'] ?? null;
         $settings = $tsfe?->tmpl?->setup['plugin.']['tx_t3pinpoint.']['settings.'] ?? [];
 
+        $backendUserId = (int)($GLOBALS['BE_USER']->user['uid'] ?? 0);
+
         return [
             'apiEndpoint' => trim($settings['apiEndpoint'] ?? ''),
             'apiKey' => trim($settings['apiKey'] ?? ''),
             'projectId' => trim($settings['projectId'] ?? ''),
             'widgetPosition' => trim($settings['widgetPosition'] ?? 'bottom-right'),
             'backendUser' => $GLOBALS['BE_USER']->user['username'] ?? '',
-            'backendUserId' => (int)($GLOBALS['BE_USER']->user['uid'] ?? 0),
+            'backendUserId' => $backendUserId,
+            'submissionToken' => $this->generateSubmissionToken($backendUserId),
         ];
+    }
+
+    /**
+     * Generate an HMAC token for authenticating widget submissions.
+     * Valid for the current day, tied to the backend user ID.
+     */
+    private function generateSubmissionToken(int $backendUserId): string
+    {
+        $encryptionKey = $GLOBALS['TYPO3_CONF_VARS']['SYS']['encryptionKey'] ?? '';
+        $payload = $backendUserId . '|' . date('Y-m-d');
+        return hash_hmac('sha256', $payload, $encryptionKey);
     }
 }

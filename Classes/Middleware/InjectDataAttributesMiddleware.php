@@ -8,16 +8,20 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\Stream;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * PSR-15 middleware that converts T3PIN marker comments into data-t3pin-* HTML attributes.
+ * PSR-15 middleware that injects data-t3pin-* HTML attributes onto content elements.
  *
- * The TypoScript setup wraps each tt_content rendering with:
- *   <!--T3PIN:begin:UID:PID:CTYPE-->...content...<!--T3PIN:end:UID-->
- *
- * This middleware finds those markers, injects data attributes onto the content element's
- * outermost HTML tag, and removes all marker comments from the output.
+ * Two strategies (tried in order):
+ * 1. TypoScript markers: If setup.typoscript injected <!--T3PIN:begin:UID:PID:CTYPE--> markers,
+ *    convert those into data attributes and remove the markers.
+ * 2. Fallback: Find standard TYPO3 content element anchors (id="c123") and inject attributes
+ *    by looking up the content element in the database. This handles cases where TypoScript
+ *    markers are not generated (e.g., page cache, Bootstrap Package overrides).
  *
  * Only active for authenticated TYPO3 backend users.
  */
@@ -44,13 +48,27 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
         $body->rewind();
         $html = $body->getContents();
 
-        // Skip if no T3PIN markers found
-        if (strpos($html, '<!--T3PIN:') === false) {
-            return $response;
+        $modified = false;
+
+        // Strategy 1: TypoScript markers
+        if (strpos($html, '<!--T3PIN:') !== false) {
+            $html = $this->processMarkers($html);
+            $html = $this->removeMarkers($html);
+            $modified = true;
         }
 
-        $html = $this->processMarkers($html);
-        $html = $this->removeMarkers($html);
+        // Strategy 2: Fallback — find id="c{uid}" elements that don't already have data-t3pin-uid
+        if (strpos($html, 'data-t3pin-uid') === false) {
+            $result = $this->processContentIds($html);
+            if ($result !== null) {
+                $html = $result;
+                $modified = true;
+            }
+        }
+
+        if (!$modified) {
+            return $response;
+        }
 
         $newBody = new Stream('php://temp', 'rw');
         $newBody->write($html);
@@ -63,7 +81,6 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
      */
     private function processMarkers(string $html): string
     {
-        // Pattern: <!--T3PIN:begin:UID:PID:CTYPE--> followed by optional whitespace and an opening HTML tag
         $pattern = '/<!--T3PIN:begin:(\d+):(\d+):([a-zA-Z0-9_]+)-->\s*(<[a-zA-Z][a-zA-Z0-9]*)/';
 
         return preg_replace_callback($pattern, function (array $matches): string {
@@ -88,5 +105,78 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
     private function removeMarkers(string $html): string
     {
         return preg_replace('/<!--T3PIN:(begin|end):[^>]*-->/', '', $html);
+    }
+
+    /**
+     * Fallback: Find elements with id="c{uid}" (standard TYPO3 content element IDs)
+     * and inject data-t3pin-* attributes by looking up the records in the database.
+     */
+    private function processContentIds(string $html): ?string
+    {
+        // Find all id="c{number}" patterns — TYPO3 adds these to each content element wrapper
+        if (!preg_match_all('/id="c(\d+)"/', $html, $matches)) {
+            return null;
+        }
+
+        $uids = array_map('intval', $matches[1]);
+        if (empty($uids)) {
+            return null;
+        }
+
+        // Fetch content element metadata in a single query
+        $contentData = $this->fetchContentElements($uids);
+        if (empty($contentData)) {
+            return null;
+        }
+
+        // For each found content element, inject data attributes onto its opening tag
+        foreach ($contentData as $uid => $data) {
+            $backendLink = '/typo3/record/edit?edit[tt_content][' . $uid . ']=edit';
+
+            $attrs = ' data-t3pin-uid="' . $uid . '"'
+                . ' data-t3pin-pid="' . (int)$data['pid'] . '"'
+                . ' data-t3pin-type="' . htmlspecialchars($data['CType'] ?? '', ENT_QUOTES, 'UTF-8') . '"'
+                . ' data-t3pin-backend="' . htmlspecialchars($backendLink, ENT_QUOTES, 'UTF-8') . '"';
+
+            // Replace id="c{uid}" with id="c{uid}" + data attributes
+            $html = preg_replace(
+                '/(<[a-zA-Z][^>]*?)(\s+id="c' . $uid . '")/',
+                '$1$2' . $attrs,
+                $html,
+                1
+            );
+        }
+
+        return $html;
+    }
+
+    /**
+     * Fetch pid and CType for the given tt_content UIDs.
+     *
+     * @param int[] $uids
+     * @return array<int, array{pid: int, CType: string}>
+     */
+    private function fetchContentElements(array $uids): array
+    {
+        $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('tt_content');
+
+        $result = $queryBuilder
+            ->select('uid', 'pid', 'CType')
+            ->from('tt_content')
+            ->where(
+                $queryBuilder->expr()->in(
+                    'uid',
+                    $queryBuilder->createNamedParameter($uids, Connection::PARAM_INT_ARRAY)
+                )
+            )
+            ->executeQuery();
+
+        $data = [];
+        while ($row = $result->fetchAssociative()) {
+            $data[(int)$row['uid']] = $row;
+        }
+
+        return $data;
     }
 }

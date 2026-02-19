@@ -11,6 +11,8 @@ use TYPO3\CMS\Extbase\Persistence\ObjectStorage;
 
 class Feedback extends AbstractEntity
 {
+    protected int $crdate = 0;
+
     protected string $title = '';
     protected string $description = '';
     protected string $status = 'open';
@@ -49,6 +51,11 @@ class Feedback extends AbstractEntity
     public function __construct()
     {
         $this->comments = new ObjectStorage();
+    }
+
+    public function getCrdate(): int
+    {
+        return $this->crdate;
     }
 
     public function getTitle(): string

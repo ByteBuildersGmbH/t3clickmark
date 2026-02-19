@@ -32,10 +32,9 @@
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th style="width: 30px"></th>
+                        <th style="width: 90px">Status</th>
                         <th>Title</th>
                         <th>Page</th>
-                        <th>Element</th>
                         <th>Priority</th>
                         <th>Reporter</th>
                         <th>Created</th>
@@ -46,10 +45,10 @@
                         <tr>
                             <td>
                                 <f:switch expression="{feedback.status}">
-                                    <f:case value="open"><span class="badge bg-primary">Open</span></f:case>
-                                    <f:case value="in_progress"><span class="badge bg-warning">In Progress</span></f:case>
-                                    <f:case value="resolved"><span class="badge bg-success">Resolved</span></f:case>
-                                    <f:case value="closed"><span class="badge bg-secondary">Closed</span></f:case>
+                                    <f:case value="open"><span class="badge" style="background:#3b82f6;color:#fff">Open</span></f:case>
+                                    <f:case value="in_progress"><span class="badge" style="background:#f59e0b;color:#1c1917">In Progress</span></f:case>
+                                    <f:case value="resolved"><span class="badge" style="background:#22c55e;color:#fff">Resolved</span></f:case>
+                                    <f:case value="closed"><span class="badge" style="background:#6b7280;color:#fff">Closed</span></f:case>
                                 </f:switch>
                             </td>
                             <td>
@@ -57,17 +56,16 @@
                                     {feedback.title}
                                 </f:link.action>
                             </td>
-                            <td>#{feedback.pageUid}</td>
                             <td>
-                                <f:if condition="{feedback.contentUid}">
-                                    #{feedback.contentUid} <small class="text-muted">({feedback.contentType})</small>
+                                <f:if condition="{feedback.pageUid}">
+                                    #{feedback.pageUid}
                                 </f:if>
                             </td>
                             <td>
                                 <f:switch expression="{feedback.priority}">
-                                    <f:case value="low"><span class="badge bg-info">Low</span></f:case>
-                                    <f:case value="medium"><span class="badge bg-warning">Medium</span></f:case>
-                                    <f:case value="high"><span class="badge bg-danger">High</span></f:case>
+                                    <f:case value="low"><span class="badge" style="background:#e0f2fe;color:#0c4a6e">Low</span></f:case>
+                                    <f:case value="medium"><span class="badge" style="background:#fef3c7;color:#92400e">Medium</span></f:case>
+                                    <f:case value="high"><span class="badge" style="background:#fee2e2;color:#991b1b">High</span></f:case>
                                 </f:switch>
                             </td>
                             <td>{feedback.backendUsername}</td>

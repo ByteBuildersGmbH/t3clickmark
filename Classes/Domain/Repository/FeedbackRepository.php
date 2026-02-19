@@ -14,6 +14,16 @@ class FeedbackRepository extends Repository
         'crdate' => QueryInterface::ORDER_DESCENDING,
     ];
 
+    /**
+     * Ignore storagePid — feedback records are stored globally (pid=0).
+     */
+    public function initializeObject(): void
+    {
+        $querySettings = $this->createQuery()->getQuerySettings();
+        $querySettings->setRespectStoragePage(false);
+        $this->setDefaultQuerySettings($querySettings);
+    }
+
     public function findFiltered(string $status = '', string $priority = ''): QueryResultInterface
     {
         $query = $this->createQuery();

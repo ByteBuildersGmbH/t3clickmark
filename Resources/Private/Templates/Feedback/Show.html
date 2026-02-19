@@ -14,28 +14,28 @@
     </div>
 
     <!-- Header -->
-    <div class="d-flex align-items-center mb-4">
+    <div class="d-flex align-items-center flex-wrap gap-1 mb-4">
         <h1 class="me-3 mb-0">{feedback.title}</h1>
         <f:switch expression="{feedback.status}">
-            <f:case value="open"><span class="badge bg-primary">Open</span></f:case>
-            <f:case value="in_progress"><span class="badge bg-warning">In Progress</span></f:case>
-            <f:case value="resolved"><span class="badge bg-success">Resolved</span></f:case>
-            <f:case value="closed"><span class="badge bg-secondary">Closed</span></f:case>
+            <f:case value="open"><span class="badge" style="background:#3b82f6;color:#fff">Open</span></f:case>
+            <f:case value="in_progress"><span class="badge" style="background:#f59e0b;color:#1c1917">In Progress</span></f:case>
+            <f:case value="resolved"><span class="badge" style="background:#22c55e;color:#fff">Resolved</span></f:case>
+            <f:case value="closed"><span class="badge" style="background:#6b7280;color:#fff">Closed</span></f:case>
         </f:switch>
         <f:switch expression="{feedback.priority}">
-            <f:case value="low"><span class="badge bg-info ms-1">Low</span></f:case>
-            <f:case value="medium"><span class="badge bg-warning ms-1">Medium</span></f:case>
-            <f:case value="high"><span class="badge bg-danger ms-1">High</span></f:case>
+            <f:case value="low"><span class="badge" style="background:#e0f2fe;color:#0c4a6e">Low</span></f:case>
+            <f:case value="medium"><span class="badge" style="background:#fef3c7;color:#92400e">Medium</span></f:case>
+            <f:case value="high"><span class="badge" style="background:#fee2e2;color:#991b1b">High</span></f:case>
         </f:switch>
         <f:switch expression="{feedback.category}">
-            <f:case value="bug"><span class="badge bg-danger ms-1">Bug</span></f:case>
-            <f:case value="change_request"><span class="badge bg-info ms-1">Change Request</span></f:case>
-            <f:case value="question"><span class="badge bg-secondary ms-1">Question</span></f:case>
+            <f:case value="bug"><span class="badge" style="background:#fecaca;color:#991b1b">Bug</span></f:case>
+            <f:case value="change_request"><span class="badge" style="background:#dbeafe;color:#1e3a5f">Change Request</span></f:case>
+            <f:case value="question"><span class="badge" style="background:#e5e7eb;color:#374151">Question</span></f:case>
         </f:switch>
     </div>
 
     <div class="row">
-        <!-- Left column: Screenshots -->
+        <!-- Left column: Screenshots + Description -->
         <div class="col-md-7">
             <f:if condition="{feedback.annotatedScreenshot}">
                 <div class="card mb-3">
@@ -72,14 +72,22 @@
             <div class="card mb-3">
                 <div class="card-header">TYPO3 Context</div>
                 <table class="table table-sm mb-0">
-                    <tr>
-                        <th>Page</th>
-                        <td>#{feedback.pageUid}</td>
-                    </tr>
+                    <f:if condition="{feedback.pageUid}">
+                        <tr>
+                            <th style="width:140px">Page</th>
+                            <td>#{feedback.pageUid}</td>
+                        </tr>
+                    </f:if>
                     <f:if condition="{feedback.contentUid}">
                         <tr>
                             <th>Content Element</th>
                             <td>#{feedback.contentUid} ({feedback.contentType})</td>
+                        </tr>
+                    </f:if>
+                    <f:if condition="{feedback.pageUrl}">
+                        <tr>
+                            <th>Page URL</th>
+                            <td><a href="{feedback.pageUrl}" target="_blank">{feedback.pageUrl}</a></td>
                         </tr>
                     </f:if>
                     <f:if condition="{feedback.backendEditLink}">
@@ -92,22 +100,16 @@
                             </td>
                         </tr>
                     </f:if>
-                    <f:if condition="{feedback.pageUrl}">
-                        <tr>
-                            <th>Page URL</th>
-                            <td><a href="{feedback.pageUrl}" target="_blank">{feedback.pageUrl}</a></td>
-                        </tr>
-                    </f:if>
                 </table>
             </div>
 
             <!-- Browser Info -->
             <div class="card mb-3">
-                <div class="card-header">Browser Info</div>
+                <div class="card-header">Browser &amp; Environment</div>
                 <table class="table table-sm mb-0">
                     <f:if condition="{feedback.browserInfo}">
                         <tr>
-                            <th>Browser</th>
+                            <th style="width:140px">Browser / OS</th>
                             <td>{feedback.browserInfo}</td>
                         </tr>
                     </f:if>
@@ -115,6 +117,12 @@
                         <tr>
                             <th>Viewport</th>
                             <td>{feedback.viewport}</td>
+                        </tr>
+                    </f:if>
+                    <f:if condition="{feedback.cssSelector}">
+                        <tr>
+                            <th>CSS Selector</th>
+                            <td><code style="font-size:12px">{feedback.cssSelector}</code></td>
                         </tr>
                     </f:if>
                     <tr>
