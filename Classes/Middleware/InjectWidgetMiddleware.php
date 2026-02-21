@@ -69,16 +69,13 @@ class InjectWidgetMiddleware implements MiddlewareInterface
 
     private function buildWidgetConfig(): array
     {
-        // Read settings from TypoScript (via TSFE if available)
+        // Read widget display settings from TypoScript (via TSFE if available)
         $tsfe = $GLOBALS['TSFE'] ?? null;
         $settings = $tsfe?->tmpl?->setup['plugin.']['tx_t3pinpoint.']['settings.'] ?? [];
 
         $backendUserId = (int)($GLOBALS['BE_USER']->user['uid'] ?? 0);
 
         return [
-            'apiEndpoint' => trim($settings['apiEndpoint'] ?? ''),
-            'apiKey' => trim($settings['apiKey'] ?? ''),
-            'projectId' => trim($settings['projectId'] ?? ''),
             'widgetPosition' => trim($settings['widgetPosition'] ?? 'bottom-right'),
             'backendUser' => $GLOBALS['BE_USER']->user['username'] ?? '',
             'backendUserId' => $backendUserId,

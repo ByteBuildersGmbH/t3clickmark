@@ -15,9 +15,6 @@ tt_content.stdWrap.append.dataWrap = <!--T3PIN:end:{field:uid}-->
 # Widget configuration (read by InjectWidgetMiddleware)
 plugin.tx_t3pinpoint {
     settings {
-        apiEndpoint = {$plugin.tx_t3pinpoint.settings.apiEndpoint}
-        apiKey = {$plugin.tx_t3pinpoint.settings.apiKey}
-        projectId = {$plugin.tx_t3pinpoint.settings.projectId}
         widgetPosition = {$plugin.tx_t3pinpoint.settings.widgetPosition}
     }
 }

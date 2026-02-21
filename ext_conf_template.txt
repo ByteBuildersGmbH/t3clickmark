@@ -1,0 +1,5 @@
+# cat=AgencyDesk/general/010; type=string; label=AgencyDesk API Endpoint: The URL of your AgencyDesk API (e.g. https://agencydesk.example.com/api/v1). Leave empty for local-only mode.
+apiEndpoint =
+
+# cat=AgencyDesk/general/020; type=string; label=AgencyDesk API Key: Your project API key from AgencyDesk. Required when API endpoint is set.
+apiKey =
