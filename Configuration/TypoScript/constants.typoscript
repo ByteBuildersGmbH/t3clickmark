@@ -2,7 +2,7 @@
 
 plugin.tx_t3pinpoint {
     settings {
-        # cat=T3Pinpoint/general/010; type=options[bottom-right,bottom-left,top-right,top-left]; label=Widget Position: Where the feedback button appears on the page.
-        widgetPosition = bottom-right
+        # cat=T3Pinpoint/general/010; type=options[right-center,bottom-right,bottom-left,top-right,top-left]; label=Widget Position: Where the feedback button appears on the page.
+        widgetPosition = right-center
     }
 }

@@ -76,7 +76,7 @@ class InjectWidgetMiddleware implements MiddlewareInterface
         $backendUserId = (int)($GLOBALS['BE_USER']->user['uid'] ?? 0);
 
         return [
-            'widgetPosition' => trim($settings['widgetPosition'] ?? 'bottom-right'),
+            'widgetPosition' => trim($settings['widgetPosition'] ?? 'right-center'),
             'backendUser' => $GLOBALS['BE_USER']->user['username'] ?? '',
             'backendUserId' => $backendUserId,
             'submissionToken' => $this->generateSubmissionToken($backendUserId),
