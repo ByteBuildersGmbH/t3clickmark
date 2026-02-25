@@ -7,4 +7,30 @@
 
 <script src="{f:uri.resource(path:'JavaScript/backend-lightbox.js', extensionName:'t3pinpoint')}"></script>
 
+<script>
+(function() {
+    var el = document.querySelector('.t3pin-list, .t3pin-detail');
+    if (!el) return;
+
+    // Version badge: inject into content container via JS
+    el.style.position = 'relative';
+    var badge = document.createElement('div');
+    badge.textContent = 'v0.2.9';
+    badge.style.cssText = 'position:absolute;top:4px;right:8px;font-size:10px;color:#94a3b8;font-weight:600;background:#334155;padding:2px 8px;border-radius:4px;border:1px solid #475569;font-family:-apple-system,sans-serif;z-index:999;';
+    el.appendChild(badge);
+
+    // Full width: remove max-width on all ancestors
+    var parent = el.parentElement;
+    while (parent && parent !== document.body && parent !== document.documentElement) {
+        parent.style.maxWidth = 'none';
+        parent.style.width = '100%';
+        parent.style.boxSizing = 'border-box';
+        parent = parent.parentElement;
+    }
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    document.body.style.width = '100%';
+})();
+</script>
+
 </html>

@@ -126,37 +126,27 @@
                                 <td>{feedback.viewport}</td>
                             </tr>
                         </f:if>
-                        <tr>
-                            <th>Console</th>
-                            <td>
-                                <f:if condition="{feedback.consoleErrors} || {feedback.consoleWarnings}">
-                                    <f:then>
-                                        <f:if condition="{feedback.consoleErrors}">
-                                            <span class="t3pin-badge t3pin-badge-high">{feedback.consoleErrors} error<f:if condition="{feedback.consoleErrors} > 1">s</f:if></span>
-                                        </f:if>
-                                        <f:if condition="{feedback.consoleWarnings}">
-                                            <span class="t3pin-badge t3pin-badge-medium">{feedback.consoleWarnings} warning<f:if condition="{feedback.consoleWarnings} > 1">s</f:if></span>
-                                        </f:if>
-                                    </f:then>
-                                    <f:else>
-                                        <span class="t3pin-badge t3pin-badge-resolved">No issues</span>
-                                    </f:else>
-                                </f:if>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Network</th>
-                            <td>
-                                <f:if condition="{feedback.failedRequests}">
-                                    <f:then>
-                                        <span class="t3pin-badge t3pin-badge-high">{feedback.failedRequests} failed request<f:if condition="{feedback.failedRequests} > 1">s</f:if></span>
-                                    </f:then>
-                                    <f:else>
-                                        <span class="t3pin-badge t3pin-badge-resolved">All OK</span>
-                                    </f:else>
-                                </f:if>
-                            </td>
-                        </tr>
+                        <f:if condition="{feedback.consoleErrors} || {feedback.consoleWarnings}">
+                            <tr>
+                                <th>Console</th>
+                                <td>
+                                    <f:if condition="{feedback.consoleErrors}">
+                                        <span class="t3pin-badge t3pin-badge-high">{feedback.consoleErrors} error<f:if condition="{feedback.consoleErrors} > 1">s</f:if></span>
+                                    </f:if>
+                                    <f:if condition="{feedback.consoleWarnings}">
+                                        <span class="t3pin-badge t3pin-badge-medium">{feedback.consoleWarnings} warning<f:if condition="{feedback.consoleWarnings} > 1">s</f:if></span>
+                                    </f:if>
+                                </td>
+                            </tr>
+                        </f:if>
+                        <f:if condition="{feedback.failedRequests}">
+                            <tr>
+                                <th>Network</th>
+                                <td>
+                                    <span class="t3pin-badge t3pin-badge-high">{feedback.failedRequests} failed request<f:if condition="{feedback.failedRequests} > 1">s</f:if></span>
+                                </td>
+                            </tr>
+                        </f:if>
                         <f:if condition="{feedback.cssSelector}">
                             <tr>
                                 <th>CSS Selector</th>

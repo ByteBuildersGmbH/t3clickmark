@@ -263,9 +263,18 @@ html.gl-dark {
 
 /* --- Detail View --- */
 .t3pin-detail {
-    max-width: 1200px;
     padding: 16px 32px;
 }
+
+/* Ensure scrollability in TYPO3 v12 iframe modules.
+   v12 renders modules inside an iframe whose body may have overflow:hidden
+   from TYPO3's own CSS. Force it to be scrollable. Do NOT set height:100%
+   on containers — that collapses them when the parent chain is broken. */
+body {
+    margin: 0;
+    overflow-y: auto !important;
+}
+
 
 .t3pin-back-link {
     margin-bottom: 16px;
@@ -509,7 +518,6 @@ html.gl-dark {
 
 /* --- List View --- */
 .t3pin-list {
-    max-width: 1200px;
     padding: 16px 32px;
 }
 
