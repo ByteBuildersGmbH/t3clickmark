@@ -1,5 +1,5 @@
 {
-    "name": "bytebuilders/t3pinpoint",
+    "name": "bytebuilders/t3clickmark",
     "type": "typo3-cms-extension",
     "description": "Visual website feedback for TYPO3 agencies. Content element recognition, backend edit links, screenshot capture, and annotation tools.",
     "license": "GPL-2.0-or-later",
@@ -17,12 +17,12 @@
     },
     "autoload": {
         "psr-4": {
-            "ByteBuilders\\T3Pinpoint\\": "Classes/"
+            "ByteBuilders\\T3ClickMark\\": "Classes/"
         }
     },
     "extra": {
         "typo3/cms": {
-            "extension-key": "t3pinpoint"
+            "extension-key": "t3clickmark"
         }
     }
 }

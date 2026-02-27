@@ -6,53 +6,53 @@
 
 <f:section name="Content">
 
-    <div class="t3pin-detail">
+    <div class="t3cm-detail">
 
         <!-- Back link -->
-        <div class="t3pin-back-link">
-            <f:link.action action="list" class="btn btn-sm btn-default t3pin-btn-back">
+        <div class="t3cm-back-link">
+            <f:link.action action="list" class="btn btn-sm btn-default t3cm-btn-back">
                 &#8592; Back to list
             </f:link.action>
         </div>
 
         <!-- Header -->
-        <div class="t3pin-detail-header">
-            <h1 class="t3pin-detail-title">{feedback.title}</h1>
-            <div class="t3pin-badge-group">
+        <div class="t3cm-detail-header">
+            <h1 class="t3cm-detail-title">{feedback.title}</h1>
+            <div class="t3cm-badge-group">
                 <f:switch expression="{feedback.status}">
-                    <f:case value="open"><span class="t3pin-badge t3pin-badge-open">Open</span></f:case>
-                    <f:case value="in_progress"><span class="t3pin-badge t3pin-badge-in-progress">In Progress</span></f:case>
-                    <f:case value="resolved"><span class="t3pin-badge t3pin-badge-resolved">Resolved</span></f:case>
-                    <f:case value="closed"><span class="t3pin-badge t3pin-badge-closed">Closed</span></f:case>
+                    <f:case value="open"><span class="t3cm-badge t3cm-badge-open">Open</span></f:case>
+                    <f:case value="in_progress"><span class="t3cm-badge t3cm-badge-in-progress">In Progress</span></f:case>
+                    <f:case value="resolved"><span class="t3cm-badge t3cm-badge-resolved">Resolved</span></f:case>
+                    <f:case value="closed"><span class="t3cm-badge t3cm-badge-closed">Closed</span></f:case>
                 </f:switch>
                 <f:switch expression="{feedback.priority}">
-                    <f:case value="low"><span class="t3pin-badge t3pin-badge-low">Low</span></f:case>
-                    <f:case value="medium"><span class="t3pin-badge t3pin-badge-medium">Medium</span></f:case>
-                    <f:case value="high"><span class="t3pin-badge t3pin-badge-high">High</span></f:case>
+                    <f:case value="low"><span class="t3cm-badge t3cm-badge-low">Low</span></f:case>
+                    <f:case value="medium"><span class="t3cm-badge t3cm-badge-medium">Medium</span></f:case>
+                    <f:case value="high"><span class="t3cm-badge t3cm-badge-high">High</span></f:case>
                 </f:switch>
                 <f:switch expression="{feedback.category}">
-                    <f:case value="bug"><span class="t3pin-badge t3pin-badge-bug">Bug</span></f:case>
-                    <f:case value="change_request"><span class="t3pin-badge t3pin-badge-change-request">Change Request</span></f:case>
-                    <f:case value="question"><span class="t3pin-badge t3pin-badge-question">Question</span></f:case>
+                    <f:case value="bug"><span class="t3cm-badge t3cm-badge-bug">Bug</span></f:case>
+                    <f:case value="change_request"><span class="t3cm-badge t3cm-badge-change-request">Change Request</span></f:case>
+                    <f:case value="question"><span class="t3cm-badge t3cm-badge-question">Question</span></f:case>
                 </f:switch>
             </div>
         </div>
 
-        <div class="row t3pin-detail-row">
+        <div class="row t3cm-detail-row">
             <!-- Left column: Screenshot + Description -->
             <div class="col-md-7">
-                <div class="t3pin-card">
-                    <div class="t3pin-card-header">Screenshot</div>
-                    <div class="t3pin-card-body t3pin-card-body--flush">
+                <div class="t3cm-card">
+                    <div class="t3cm-card-header">Screenshot</div>
+                    <div class="t3cm-card-body t3cm-card-body--flush">
                         <f:if condition="{annotatedFile}">
                             <f:then>
-                                <a href="#" class="t3pin-screenshot-link" data-t3pin-lightbox="{f:uri.image(image: annotatedFile)}">
-                                    <f:image image="{annotatedFile}" maxWidth="800" class="t3pin-screenshot-img" />
-                                    <span class="t3pin-screenshot-zoom">Click to enlarge</span>
+                                <a href="#" class="t3cm-screenshot-link" data-t3cm-lightbox="{f:uri.image(image: annotatedFile)}">
+                                    <f:image image="{annotatedFile}" maxWidth="800" class="t3cm-screenshot-img" />
+                                    <span class="t3cm-screenshot-zoom">Click to enlarge</span>
                                 </a>
                             </f:then>
                             <f:else>
-                                <div class="t3pin-empty-state">
+                                <div class="t3cm-empty-state">
                                     No screenshot available
                                 </div>
                             </f:else>
@@ -62,10 +62,10 @@
 
                 <!-- Description -->
                 <f:if condition="{feedback.description}">
-                    <div class="t3pin-card">
-                        <div class="t3pin-card-header">Description</div>
-                        <div class="t3pin-card-body">
-                            <div class="t3pin-description">
+                    <div class="t3cm-card">
+                        <div class="t3cm-card-header">Description</div>
+                        <div class="t3cm-card-body">
+                            <div class="t3cm-description">
                                 <f:format.nl2br>{feedback.description}</f:format.nl2br>
                             </div>
                         </div>
@@ -76,9 +76,9 @@
             <!-- Right column: Metadata + Actions -->
             <div class="col-md-5">
                 <!-- TYPO3 Context -->
-                <div class="t3pin-card">
-                    <div class="t3pin-card-header">TYPO3 Context</div>
-                    <table class="t3pin-meta-table">
+                <div class="t3cm-card">
+                    <div class="t3cm-card-header">TYPO3 Context</div>
+                    <table class="t3cm-meta-table">
                         <f:if condition="{feedback.pageUid}">
                             <tr>
                                 <th>Page</th>
@@ -88,20 +88,20 @@
                         <f:if condition="{feedback.contentUid}">
                             <tr>
                                 <th>Content Element</th>
-                                <td>#{feedback.contentUid} <span class="t3pin-meta-secondary">({feedback.contentType})</span></td>
+                                <td>#{feedback.contentUid} <span class="t3cm-meta-secondary">({feedback.contentType})</span></td>
                             </tr>
                         </f:if>
                         <f:if condition="{feedback.pageUrl}">
                             <tr>
                                 <th>Page URL</th>
-                                <td><a href="{feedback.pageUrl}" target="_blank" class="t3pin-link">{feedback.pageUrl}</a></td>
+                                <td><a href="{feedback.pageUrl}" target="_blank" class="t3cm-link">{feedback.pageUrl}</a></td>
                             </tr>
                         </f:if>
                         <f:if condition="{feedback.backendEditLink}">
                             <tr>
                                 <th>Action</th>
                                 <td>
-                                    <a href="{feedback.backendEditLink}" target="_blank" class="btn btn-sm btn-primary t3pin-btn-action">
+                                    <a href="{feedback.backendEditLink}" target="_blank" class="btn btn-sm btn-primary t3cm-btn-action">
                                         Edit in Backend
                                     </a>
                                 </td>
@@ -111,9 +111,9 @@
                 </div>
 
                 <!-- Browser Info -->
-                <div class="t3pin-card">
-                    <div class="t3pin-card-header">Browser &amp; Environment</div>
-                    <table class="t3pin-meta-table">
+                <div class="t3cm-card">
+                    <div class="t3cm-card-header">Browser &amp; Environment</div>
+                    <table class="t3cm-meta-table">
                         <f:if condition="{feedback.browserInfo}">
                             <tr>
                                 <th>Browser / OS</th>
@@ -131,10 +131,10 @@
                                 <th>Console</th>
                                 <td>
                                     <f:if condition="{feedback.consoleErrors}">
-                                        <span class="t3pin-badge t3pin-badge-high">{feedback.consoleErrors} error<f:if condition="{feedback.consoleErrors} > 1">s</f:if></span>
+                                        <span class="t3cm-badge t3cm-badge-high">{feedback.consoleErrors} error<f:if condition="{feedback.consoleErrors} > 1">s</f:if></span>
                                     </f:if>
                                     <f:if condition="{feedback.consoleWarnings}">
-                                        <span class="t3pin-badge t3pin-badge-medium">{feedback.consoleWarnings} warning<f:if condition="{feedback.consoleWarnings} > 1">s</f:if></span>
+                                        <span class="t3cm-badge t3cm-badge-medium">{feedback.consoleWarnings} warning<f:if condition="{feedback.consoleWarnings} > 1">s</f:if></span>
                                     </f:if>
                                 </td>
                             </tr>
@@ -143,14 +143,14 @@
                             <tr>
                                 <th>Network</th>
                                 <td>
-                                    <span class="t3pin-badge t3pin-badge-high">{feedback.failedRequests} failed request<f:if condition="{feedback.failedRequests} > 1">s</f:if></span>
+                                    <span class="t3cm-badge t3cm-badge-high">{feedback.failedRequests} failed request<f:if condition="{feedback.failedRequests} > 1">s</f:if></span>
                                 </td>
                             </tr>
                         </f:if>
                         <f:if condition="{feedback.cssSelector}">
                             <tr>
                                 <th>CSS Selector</th>
-                                <td><code class="t3pin-code">{feedback.cssSelector}</code></td>
+                                <td><code class="t3cm-code">{feedback.cssSelector}</code></td>
                             </tr>
                         </f:if>
                         <tr>
@@ -166,15 +166,15 @@
 
                 <!-- External Sync -->
                 <f:if condition="{feedback.externalId}">
-                    <div class="t3pin-card">
-                        <div class="t3pin-card-header">External Sync</div>
-                        <table class="t3pin-meta-table">
+                    <div class="t3cm-card">
+                        <div class="t3cm-card-header">External Sync</div>
+                        <table class="t3cm-meta-table">
                             <tr>
                                 <th>External ID</th>
                                 <td>
                                     <f:if condition="{feedback.externalUrl}">
                                         <f:then>
-                                            <a href="{feedback.externalUrl}" target="_blank" class="t3pin-link">{feedback.externalId}</a>
+                                            <a href="{feedback.externalUrl}" target="_blank" class="t3cm-link">{feedback.externalId}</a>
                                         </f:then>
                                         <f:else>{feedback.externalId}</f:else>
                                     </f:if>
@@ -185,9 +185,9 @@
                 </f:if>
 
                 <!-- Change Status -->
-                <div class="t3pin-card">
-                    <div class="t3pin-card-header">Change Status</div>
-                    <div class="t3pin-card-body">
+                <div class="t3cm-card">
+                    <div class="t3cm-card-header">Change Status</div>
+                    <div class="t3cm-card-body">
                         <f:form action="updateStatus" method="post">
                             <f:form.hidden name="feedback" value="{feedback.uid}" />
                             <div class="input-group">
@@ -207,20 +207,20 @@
         </div>
 
         <!-- Comments -->
-        <div class="t3pin-card t3pin-comments-card">
-            <div class="t3pin-card-header">Comments</div>
-            <div class="t3pin-card-body">
+        <div class="t3cm-card t3cm-comments-card">
+            <div class="t3cm-card-header">Comments</div>
+            <div class="t3cm-card-body">
                 <f:if condition="{feedback.comments}">
-                    <div class="t3pin-comments-list">
+                    <div class="t3cm-comments-list">
                         <f:for each="{feedback.comments}" as="comment">
-                            <div class="t3pin-comment">
-                                <div class="t3pin-comment-header">
-                                    <strong class="t3pin-comment-author">{comment.authorName}</strong>
-                                    <span class="t3pin-comment-date">
+                            <div class="t3cm-comment">
+                                <div class="t3cm-comment-header">
+                                    <strong class="t3cm-comment-author">{comment.authorName}</strong>
+                                    <span class="t3cm-comment-date">
                                         <f:format.date format="d.m.Y H:i">{comment.crdate}</f:format.date>
                                     </span>
                                 </div>
-                                <div class="t3pin-comment-body">
+                                <div class="t3cm-comment-body">
                                     <f:format.nl2br>{comment.comment}</f:format.nl2br>
                                 </div>
                             </div>
@@ -229,7 +229,7 @@
                 </f:if>
 
                 <!-- Add Comment Form -->
-                <f:form action="addComment" method="post" class="t3pin-comment-form">
+                <f:form action="addComment" method="post" class="t3cm-comment-form">
                     <f:form.hidden name="feedback" value="{feedback.uid}" />
                     <div class="mb-2">
                         <f:form.textarea name="comment" rows="3" class="form-control"

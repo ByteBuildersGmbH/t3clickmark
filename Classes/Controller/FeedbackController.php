@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ByteBuilders\T3Pinpoint\Controller;
+namespace ByteBuilders\T3ClickMark\Controller;
 
-use ByteBuilders\T3Pinpoint\Domain\Model\Feedback;
-use ByteBuilders\T3Pinpoint\Domain\Model\FeedbackComment;
-use ByteBuilders\T3Pinpoint\Domain\Repository\FeedbackRepository;
+use ByteBuilders\T3ClickMark\Domain\Model\Feedback;
+use ByteBuilders\T3ClickMark\Domain\Model\FeedbackComment;
+use ByteBuilders\T3ClickMark\Domain\Repository\FeedbackRepository;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Backend\Attribute\AsController;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -109,7 +109,7 @@ class FeedbackController extends ActionController
             ->from('sys_file_reference')
             ->where(
                 $queryBuilder->expr()->eq('uid_foreign', $queryBuilder->createNamedParameter($feedbackUid, \Doctrine\DBAL\ParameterType::INTEGER)),
-                $queryBuilder->expr()->eq('tablenames', $queryBuilder->createNamedParameter('tx_t3pinpoint_domain_model_feedback')),
+                $queryBuilder->expr()->eq('tablenames', $queryBuilder->createNamedParameter('tx_t3clickmark_domain_model_feedback')),
                 $queryBuilder->expr()->eq('fieldname', $queryBuilder->createNamedParameter($fieldName))
             )
             ->setMaxResults(1)

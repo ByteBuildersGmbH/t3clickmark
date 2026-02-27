@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'ctrl' => [
-        'title' => 'LLL:EXT:t3pinpoint/Resources/Private/Language/locallang_db.xlf:tx_t3pinpoint_domain_model_feedback',
+        'title' => 'LLL:EXT:t3clickmark/Resources/Private/Language/locallang_db.xlf:tx_t3clickmark_domain_model_feedback',
         'label' => 'title',
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
@@ -13,7 +13,7 @@ return [
             'disabled' => 'hidden',
         ],
         'searchFields' => 'title,description,backend_username,page_url',
-        'iconIdentifier' => 't3pinpoint-module-feedback',
+        'iconIdentifier' => 't3clickmark-module-feedback',
     ],
     'types' => [
         '1' => [
@@ -255,7 +255,7 @@ return [
             'label' => 'Comments',
             'config' => [
                 'type' => 'inline',
-                'foreign_table' => 'tx_t3pinpoint_domain_model_feedbackcomment',
+                'foreign_table' => 'tx_t3clickmark_domain_model_feedbackcomment',
                 'foreign_field' => 'feedback',
                 'maxitems' => 100,
                 'appearance' => [

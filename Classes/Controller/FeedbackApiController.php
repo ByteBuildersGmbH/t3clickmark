@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ByteBuilders\T3Pinpoint\Controller;
+namespace ByteBuilders\T3ClickMark\Controller;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,7 +14,7 @@ use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * eID controller that receives feedback submissions from the T3Pinpoint widget.
+ * eID controller that receives feedback submissions from the T3ClickMark widget.
  * Stores feedback locally in TYPO3 (database + FAL) and optionally forwards
  * to AgencyDesk API if configured.
  *
@@ -26,7 +26,7 @@ class FeedbackApiController
     /**
      * AgencyDesk API base URL. Changed per release cycle.
      */
-    private const API_ENDPOINT = 'https://pinpoint.bytebuilders.de/api/v1';
+    private const API_ENDPOINT = 'https://clickmark.bytebuilders.de/api/v1';
 
     public function submitAction(ServerRequestInterface $request): ResponseInterface
     {
@@ -51,14 +51,14 @@ class FeedbackApiController
         // We need the file for both local FAL storage and AgencyDesk forwarding.
         $screenshotTempPath = null;
         if (!empty($uploadedFiles['annotatedScreenshot'])) {
-            $screenshotTempPath = GeneralUtility::tempnam('t3pin_fwd_') . '.png';
+            $screenshotTempPath = GeneralUtility::tempnam('t3cm_fwd_') . '.png';
             $stream = $uploadedFiles['annotatedScreenshot']->getStream();
             $stream->rewind();
             file_put_contents($screenshotTempPath, $stream->getContents());
         }
 
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getConnectionForTable('tx_t3pinpoint_domain_model_feedback');
+            ->getConnectionForTable('tx_t3clickmark_domain_model_feedback');
 
         // Build the feedback record
         $record = [
@@ -86,7 +86,7 @@ class FeedbackApiController
             'annotated_screenshot' => 0,
         ];
 
-        $connection->insert('tx_t3pinpoint_domain_model_feedback', $record);
+        $connection->insert('tx_t3clickmark_domain_model_feedback', $record);
         $feedbackUid = (int)$connection->lastInsertId();
 
         // Handle file upload (annotated screenshot) — stores in FAL
@@ -155,9 +155,9 @@ class FeedbackApiController
         }
 
         // Create target folder if it doesn't exist
-        $targetFolderPath = 'user_upload/t3pinpoint/';
+        $targetFolderPath = 'user_upload/t3clickmark/';
         if (!$storage->hasFolder($targetFolderPath)) {
-            $storage->createFolder('t3pinpoint', $storage->getFolder('user_upload'));
+            $storage->createFolder('t3clickmark', $storage->getFolder('user_upload'));
         }
         $targetFolder = $storage->getFolder($targetFolderPath);
 
@@ -165,7 +165,7 @@ class FeedbackApiController
         $filename = sprintf('feedback_%d_%s_%s.png', $feedbackUid, $fieldName, uniqid());
 
         // Use PSR-7 moveTo() — the standard way to persist uploaded files.
-        $tempFile = GeneralUtility::tempnam('t3pin_') . '.png';
+        $tempFile = GeneralUtility::tempnam('t3cm_') . '.png';
         $uploadedFile->moveTo($tempFile);
 
         if (!file_exists($tempFile) || filesize($tempFile) === 0) {
@@ -185,16 +185,16 @@ class FeedbackApiController
             'crdate' => time(),
             'uid_local' => $file->getUid(),
             'uid_foreign' => $feedbackUid,
-            'tablenames' => 'tx_t3pinpoint_domain_model_feedback',
+            'tablenames' => 'tx_t3clickmark_domain_model_feedback',
             'fieldname' => $fieldName,
             'sorting_foreign' => 1,
         ]);
 
         // Update the feedback record's file count so Extbase resolves the relation
         $feedbackConnection = GeneralUtility::makeInstance(ConnectionPool::class)
-            ->getConnectionForTable('tx_t3pinpoint_domain_model_feedback');
+            ->getConnectionForTable('tx_t3clickmark_domain_model_feedback');
         $feedbackConnection->update(
-            'tx_t3pinpoint_domain_model_feedback',
+            'tx_t3clickmark_domain_model_feedback',
             [$fieldName => 1],
             ['uid' => $feedbackUid]
         );
@@ -240,7 +240,7 @@ class FeedbackApiController
     {
         try {
             $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class);
-            $apiKey = trim((string)$extConf->get('t3pinpoint', 'apiKey'));
+            $apiKey = trim((string)$extConf->get('t3clickmark', 'apiKey'));
         } catch (\Exception $e) {
             return null;
         }
@@ -252,7 +252,7 @@ class FeedbackApiController
         $apiEndpoint = self::API_ENDPOINT;
 
         // Build multipart form data for the AgencyDesk API
-        $boundary = 'T3Pinpoint' . uniqid();
+        $boundary = 'T3ClickMark' . uniqid();
         $body = '';
 
         // All text fields the AgencyDesk API expects

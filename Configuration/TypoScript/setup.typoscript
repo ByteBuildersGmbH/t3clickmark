@@ -1,21 +1,21 @@
-# T3Pinpoint TypoScript Setup
+# T3ClickMark TypoScript Setup
 # Wraps each content element with marker comments for the PSR-15 middleware.
-# The middleware converts these markers into data-t3pin-* HTML attributes.
+# The middleware converts these markers into data-t3cm-* HTML attributes.
 
 [backend.user.isLoggedIn]
 
 # Prepend marker comment before each content element
 tt_content.stdWrap.prepend = TEXT
-tt_content.stdWrap.prepend.dataWrap = <!--T3PIN:begin:{field:uid}:{field:pid}:{field:CType}-->
+tt_content.stdWrap.prepend.dataWrap = <!--T3CM:begin:{field:uid}:{field:pid}:{field:CType}-->
 
 # Append marker comment after each content element
 tt_content.stdWrap.append = TEXT
-tt_content.stdWrap.append.dataWrap = <!--T3PIN:end:{field:uid}-->
+tt_content.stdWrap.append.dataWrap = <!--T3CM:end:{field:uid}-->
 
 # Widget configuration (read by InjectWidgetMiddleware)
-plugin.tx_t3pinpoint {
+plugin.tx_t3clickmark {
     settings {
-        widgetPosition = {$plugin.tx_t3pinpoint.settings.widgetPosition}
+        widgetPosition = {$plugin.tx_t3clickmark.settings.widgetPosition}
     }
 }
 

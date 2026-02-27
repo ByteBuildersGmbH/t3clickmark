@@ -6,21 +6,21 @@
 
 <f:section name="Content">
 
-    <div class="t3pin-list">
+    <div class="t3cm-list">
 
-        <h1 class="t3pin-list-title">Feedback</h1>
+        <h1 class="t3cm-list-title">Feedback</h1>
 
         <!-- Filters -->
-        <div class="t3pin-filter-bar">
+        <div class="t3cm-filter-bar">
             <f:form action="list" method="post" class="d-flex align-items-center gap-3 flex-wrap">
-                <div class="t3pin-filter-group">
-                    <label class="t3pin-filter-label">Status</label>
+                <div class="t3cm-filter-group">
+                    <label class="t3cm-filter-label">Status</label>
                     <f:form.select property="status" options="{statusOptions}" optionValueField="" optionLabelField=""
                                    prependOptionLabel="All" prependOptionValue="" value="{currentStatus}"
                                    class="form-select form-select-sm" />
                 </div>
-                <div class="t3pin-filter-group">
-                    <label class="t3pin-filter-label">Priority</label>
+                <div class="t3cm-filter-group">
+                    <label class="t3cm-filter-label">Priority</label>
                     <f:form.select property="priority" options="{priorityOptions}" optionValueField="" optionLabelField=""
                                    prependOptionLabel="All" prependOptionValue="" value="{currentPriority}"
                                    class="form-select form-select-sm" />
@@ -31,8 +31,8 @@
 
         <f:if condition="{feedbacks}">
             <f:then>
-                <div class="t3pin-table-wrap">
-                    <table class="t3pin-table">
+                <div class="t3cm-table-wrap">
+                    <table class="t3cm-table">
                         <thead>
                             <tr>
                                 <th style="width: 100px">Status</th>
@@ -48,14 +48,14 @@
                                 <tr>
                                     <td>
                                         <f:switch expression="{feedback.status}">
-                                            <f:case value="open"><span class="t3pin-badge t3pin-badge-open">Open</span></f:case>
-                                            <f:case value="in_progress"><span class="t3pin-badge t3pin-badge-in-progress">In Progress</span></f:case>
-                                            <f:case value="resolved"><span class="t3pin-badge t3pin-badge-resolved">Resolved</span></f:case>
-                                            <f:case value="closed"><span class="t3pin-badge t3pin-badge-closed">Closed</span></f:case>
+                                            <f:case value="open"><span class="t3cm-badge t3cm-badge-open">Open</span></f:case>
+                                            <f:case value="in_progress"><span class="t3cm-badge t3cm-badge-in-progress">In Progress</span></f:case>
+                                            <f:case value="resolved"><span class="t3cm-badge t3cm-badge-resolved">Resolved</span></f:case>
+                                            <f:case value="closed"><span class="t3cm-badge t3cm-badge-closed">Closed</span></f:case>
                                         </f:switch>
                                     </td>
                                     <td>
-                                        <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3pin-table-link">
+                                        <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3cm-table-link">
                                             {feedback.title}
                                         </f:link.action>
                                     </td>
@@ -66,9 +66,9 @@
                                     </td>
                                     <td>
                                         <f:switch expression="{feedback.priority}">
-                                            <f:case value="low"><span class="t3pin-badge t3pin-badge-low">Low</span></f:case>
-                                            <f:case value="medium"><span class="t3pin-badge t3pin-badge-medium">Medium</span></f:case>
-                                            <f:case value="high"><span class="t3pin-badge t3pin-badge-high">High</span></f:case>
+                                            <f:case value="low"><span class="t3cm-badge t3cm-badge-low">Low</span></f:case>
+                                            <f:case value="medium"><span class="t3cm-badge t3cm-badge-medium">Medium</span></f:case>
+                                            <f:case value="high"><span class="t3cm-badge t3cm-badge-high">High</span></f:case>
                                         </f:switch>
                                     </td>
                                     <td>{feedback.backendUsername}</td>
@@ -80,9 +80,9 @@
                 </div>
             </f:then>
             <f:else>
-                <div class="t3pin-list-empty">
+                <div class="t3cm-list-empty">
                     <p>No feedback submissions yet.</p>
-                    <p>Feedback will appear here once submitted via the T3Pinpoint widget on the frontend.</p>
+                    <p>Feedback will appear here once submitted via the T3ClickMark widget on the frontend.</p>
                 </div>
             </f:else>
         </f:if>

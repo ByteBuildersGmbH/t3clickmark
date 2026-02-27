@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ByteBuilders\T3Pinpoint\Middleware;
+namespace ByteBuilders\T3ClickMark\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,10 +14,10 @@ use TYPO3\CMS\Core\Http\Stream;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * PSR-15 middleware that injects data-t3pin-* HTML attributes onto content elements.
+ * PSR-15 middleware that injects data-t3cm-* HTML attributes onto content elements.
  *
  * Two strategies (tried in order):
- * 1. TypoScript markers: If setup.typoscript injected <!--T3PIN:begin:UID:PID:CTYPE--> markers,
+ * 1. TypoScript markers: If setup.typoscript injected <!--T3CM:begin:UID:PID:CTYPE--> markers,
  *    convert those into data attributes and remove the markers.
  * 2. Fallback: Find standard TYPO3 content element anchors (id="c123") and inject attributes
  *    by looking up the content element in the database. This handles cases where TypoScript
@@ -55,14 +55,14 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
         $siteBase = $site ? rtrim((string)$site->getBase(), '/') : '';
 
         // Strategy 1: TypoScript markers
-        if (strpos($html, '<!--T3PIN:') !== false) {
+        if (strpos($html, '<!--T3CM:') !== false) {
             $html = $this->processMarkers($html, $siteBase);
             $html = $this->removeMarkers($html);
             $modified = true;
         }
 
-        // Strategy 2: Fallback — find id="c{uid}" elements that don't already have data-t3pin-uid
-        if (strpos($html, 'data-t3pin-uid') === false) {
+        // Strategy 2: Fallback — find id="c{uid}" elements that don't already have data-t3cm-uid
+        if (strpos($html, 'data-t3cm-uid') === false) {
             $result = $this->processContentIds($html, $siteBase);
             if ($result !== null) {
                 $html = $result;
@@ -81,11 +81,11 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Find T3PIN begin markers and inject data attributes onto the next HTML opening tag.
+     * Find T3CM begin markers and inject data attributes onto the next HTML opening tag.
      */
     private function processMarkers(string $html, string $siteBase): string
     {
-        $pattern = '/<!--T3PIN:begin:(\d+):(\d+):([a-zA-Z0-9_]+)-->\s*(<[a-zA-Z][a-zA-Z0-9]*)/';
+        $pattern = '/<!--T3CM:begin:(\d+):(\d+):([a-zA-Z0-9_]+)-->\s*(<[a-zA-Z][a-zA-Z0-9]*)/';
 
         return preg_replace_callback($pattern, function (array $matches) use ($siteBase): string {
             $uid = $matches[1];
@@ -96,24 +96,24 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
             $backendLink = $siteBase . '/typo3/record/edit?edit[tt_content][' . $uid . ']=edit';
 
             return $tag
-                . ' data-t3pin-uid="' . $uid . '"'
-                . ' data-t3pin-pid="' . $pid . '"'
-                . ' data-t3pin-type="' . htmlspecialchars($ctype, ENT_QUOTES, 'UTF-8') . '"'
-                . ' data-t3pin-backend="' . htmlspecialchars($backendLink, ENT_QUOTES, 'UTF-8') . '"';
+                . ' data-t3cm-uid="' . $uid . '"'
+                . ' data-t3cm-pid="' . $pid . '"'
+                . ' data-t3cm-type="' . htmlspecialchars($ctype, ENT_QUOTES, 'UTF-8') . '"'
+                . ' data-t3cm-backend="' . htmlspecialchars($backendLink, ENT_QUOTES, 'UTF-8') . '"';
         }, $html);
     }
 
     /**
-     * Remove all T3PIN marker comments from the HTML.
+     * Remove all T3CM marker comments from the HTML.
      */
     private function removeMarkers(string $html): string
     {
-        return preg_replace('/<!--T3PIN:(begin|end):[^>]*-->/', '', $html);
+        return preg_replace('/<!--T3CM:(begin|end):[^>]*-->/', '', $html);
     }
 
     /**
      * Fallback: Find elements with id="c{uid}" (standard TYPO3 content element IDs)
-     * and inject data-t3pin-* attributes by looking up the records in the database.
+     * and inject data-t3cm-* attributes by looking up the records in the database.
      */
     private function processContentIds(string $html, string $siteBase): ?string
     {
@@ -137,10 +137,10 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
         foreach ($contentData as $uid => $data) {
             $backendLink = $siteBase . '/typo3/record/edit?edit[tt_content][' . $uid . ']=edit';
 
-            $attrs = ' data-t3pin-uid="' . $uid . '"'
-                . ' data-t3pin-pid="' . (int)$data['pid'] . '"'
-                . ' data-t3pin-type="' . htmlspecialchars($data['CType'] ?? '', ENT_QUOTES, 'UTF-8') . '"'
-                . ' data-t3pin-backend="' . htmlspecialchars($backendLink, ENT_QUOTES, 'UTF-8') . '"';
+            $attrs = ' data-t3cm-uid="' . $uid . '"'
+                . ' data-t3cm-pid="' . (int)$data['pid'] . '"'
+                . ' data-t3cm-type="' . htmlspecialchars($data['CType'] ?? '', ENT_QUOTES, 'UTF-8') . '"'
+                . ' data-t3cm-backend="' . htmlspecialchars($backendLink, ENT_QUOTES, 'UTF-8') . '"';
 
             // Replace id="c{uid}" with id="c{uid}" + data attributes
             $html = preg_replace(

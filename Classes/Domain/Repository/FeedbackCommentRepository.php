@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ByteBuilders\T3Pinpoint\Domain\Repository;
+namespace ByteBuilders\T3ClickMark\Domain\Repository;
 
 use TYPO3\CMS\Extbase\Persistence\Repository;
 

@@ -11,21 +11,21 @@ defined('TYPO3') or die();
 
 // Include TypoScript setup
 ExtensionManagementUtility::addTypoScriptSetup(
-    '@import "EXT:t3pinpoint/Configuration/TypoScript/setup.typoscript"'
+    '@import "EXT:t3clickmark/Configuration/TypoScript/setup.typoscript"'
 );
 
 ExtensionManagementUtility::addTypoScriptConstants(
-    '@import "EXT:t3pinpoint/Configuration/TypoScript/constants.typoscript"'
+    '@import "EXT:t3clickmark/Configuration/TypoScript/constants.typoscript"'
 );
 
 // Register eID handler for feedback submission from the widget
-$GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['t3pinpoint_feedback']
-    = \ByteBuilders\T3Pinpoint\Controller\FeedbackApiController::class . '::submitAction';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['t3clickmark_feedback']
+    = \ByteBuilders\T3ClickMark\Controller\FeedbackApiController::class . '::submitAction';
 
 // Register icons
 $iconRegistry = GeneralUtility::makeInstance(IconRegistry::class);
 $iconRegistry->registerIcon(
-    't3pinpoint-module-feedback',
+    't3clickmark-module-feedback',
     SvgIconProvider::class,
-    ['source' => 'EXT:t3pinpoint/Resources/Public/Icons/Extension.svg']
+    ['source' => 'EXT:t3clickmark/Resources/Public/Icons/Extension.svg']
 );

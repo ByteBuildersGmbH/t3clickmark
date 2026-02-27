@@ -1,8 +1,8 @@
-# T3Pinpoint Constants
+# T3ClickMark Constants
 
-plugin.tx_t3pinpoint {
+plugin.tx_t3clickmark {
     settings {
-        # cat=T3Pinpoint/general/010; type=options[right-center,bottom-right,bottom-left,top-right,top-left]; label=Widget Position: Where the feedback button appears on the page.
+        # cat=T3ClickMark/general/010; type=options[right-center,bottom-right,bottom-left,top-right,top-left]; label=Widget Position: Where the feedback button appears on the page.
         widgetPosition = right-center
     }
 }

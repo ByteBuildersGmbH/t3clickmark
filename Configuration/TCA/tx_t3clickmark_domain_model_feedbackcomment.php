@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 return [
     'ctrl' => [
-        'title' => 'LLL:EXT:t3pinpoint/Resources/Private/Language/locallang_db.xlf:tx_t3pinpoint_domain_model_feedbackcomment',
+        'title' => 'LLL:EXT:t3clickmark/Resources/Private/Language/locallang_db.xlf:tx_t3clickmark_domain_model_feedbackcomment',
         'label' => 'author_name',
         'label_alt' => 'comment',
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
         'delete' => 'deleted',
         'hideTable' => true,
-        'iconIdentifier' => 't3pinpoint-module-feedback',
+        'iconIdentifier' => 't3clickmark-module-feedback',
     ],
     'types' => [
         '1' => [

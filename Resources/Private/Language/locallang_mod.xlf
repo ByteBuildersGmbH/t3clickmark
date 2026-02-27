@@ -6,10 +6,10 @@
                 <source>Feedback</source>
             </trans-unit>
             <trans-unit id="mlang_labels_tabdescr" resname="mlang_labels_tabdescr">
-                <source>T3Pinpoint Feedback</source>
+                <source>T3ClickMark Feedback</source>
             </trans-unit>
             <trans-unit id="mlang_labels_tablabel" resname="mlang_labels_tablabel">
-                <source>Visual website feedback from T3Pinpoint</source>
+                <source>Visual website feedback from T3ClickMark</source>
             </trans-unit>
         </body>
     </file>

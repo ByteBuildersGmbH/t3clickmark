@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use ByteBuilders\T3Pinpoint\Controller\FeedbackController;
+use ByteBuilders\T3ClickMark\Controller\FeedbackController;
 
 return [
-    't3pinpoint' => [
+    't3clickmark' => [
         'parent' => 'web',
         'position' => ['after' => 'list'],
         'access' => 'user',
-        'labels' => 'LLL:EXT:t3pinpoint/Resources/Private/Language/locallang_mod.xlf',
-        'iconIdentifier' => 't3pinpoint-module-feedback',
-        'extensionName' => 'T3Pinpoint',
+        'labels' => 'LLL:EXT:t3clickmark/Resources/Private/Language/locallang_mod.xlf',
+        'iconIdentifier' => 't3clickmark-module-feedback',
+        'extensionName' => 'T3ClickMark',
         'controllerActions' => [
             FeedbackController::class => [
                 'list',

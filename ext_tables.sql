@@ -1,4 +1,4 @@
-CREATE TABLE tx_t3pinpoint_domain_model_feedback (
+CREATE TABLE tx_t3clickmark_domain_model_feedback (
     title varchar(255) DEFAULT '' NOT NULL,
     description text,
     status varchar(20) DEFAULT 'open' NOT NULL,
@@ -38,7 +38,7 @@ CREATE TABLE tx_t3pinpoint_domain_model_feedback (
     comments int(11) unsigned DEFAULT '0'
 );
 
-CREATE TABLE tx_t3pinpoint_domain_model_feedbackcomment (
+CREATE TABLE tx_t3clickmark_domain_model_feedbackcomment (
     feedback int(11) DEFAULT '0' NOT NULL,
     comment text,
     author_name varchar(255) DEFAULT '' NOT NULL,

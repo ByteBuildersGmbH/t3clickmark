@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ByteBuilders\T3Pinpoint\Domain\Model;
+namespace ByteBuilders\T3ClickMark\Domain\Model;
 
 use TYPO3\CMS\Extbase\DomainObject\AbstractEntity;
 

@@ -4,5 +4,5 @@ services:
     autoconfigure: true
     public: false
 
-  ByteBuilders\T3Pinpoint\:
+  ByteBuilders\T3ClickMark\:
     resource: '../Classes/*'

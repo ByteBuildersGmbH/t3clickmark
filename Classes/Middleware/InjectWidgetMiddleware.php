@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ByteBuilders\T3Pinpoint\Middleware;
+namespace ByteBuilders\T3ClickMark\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -13,7 +13,7 @@ use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\PathUtility;
 
 /**
- * PSR-15 middleware that injects the T3Pinpoint widget script and configuration
+ * PSR-15 middleware that injects the T3ClickMark widget script and configuration
  * into the frontend HTML for authenticated backend users.
  */
 class InjectWidgetMiddleware implements MiddlewareInterface
@@ -57,12 +57,12 @@ class InjectWidgetMiddleware implements MiddlewareInterface
     {
         $config = $this->buildWidgetConfig();
         $scriptPath = PathUtility::getAbsoluteWebPath(
-            ExtensionManagementUtility::extPath('t3pinpoint', 'Resources/Public/JavaScript/t3pinpoint-widget.min.js')
+            ExtensionManagementUtility::extPath('t3clickmark', 'Resources/Public/JavaScript/t3clickmark-widget.min.js')
         );
 
         $configJson = json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 
-        return '<script type="application/json" id="t3pinpoint-config">' . $configJson . '</script>'
+        return '<script type="application/json" id="t3clickmark-config">' . $configJson . '</script>'
             . "\n"
             . '<script src="' . htmlspecialchars($scriptPath, ENT_QUOTES, 'UTF-8') . '" defer></script>';
     }
@@ -71,7 +71,7 @@ class InjectWidgetMiddleware implements MiddlewareInterface
     {
         // Read widget display settings from TypoScript (via TSFE if available)
         $tsfe = $GLOBALS['TSFE'] ?? null;
-        $settings = $tsfe?->tmpl?->setup['plugin.']['tx_t3pinpoint.']['settings.'] ?? [];
+        $settings = $tsfe?->tmpl?->setup['plugin.']['tx_t3clickmark.']['settings.'] ?? [];
 
         $backendUserId = (int)($GLOBALS['BE_USER']->user['uid'] ?? 0);
 
