@@ -6,3 +6,7 @@ services:
 
   ByteBuilders\T3ClickMark\:
     resource: '../Classes/*'
+
+  ByteBuilders\T3ClickMark\ContextMenu\ClickMarkItemProvider:
+    tags:
+      - name: backend.contextmenu.itemprovider

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\Middleware;
 
+use ByteBuilders\T3ClickMark\Service\CrossDomainTokenService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -23,7 +24,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  *    by looking up the content element in the database. This handles cases where TypoScript
  *    markers are not generated (e.g., page cache, Bootstrap Package overrides).
  *
- * Only active for authenticated TYPO3 backend users.
+ * Active for:
+ * - Same-domain: authenticated BE_USER with t3clickmark module access
+ * - Cross-domain: valid t3cm_session cookie
  */
 class InjectDataAttributesMiddleware implements MiddlewareInterface
 {
@@ -33,8 +36,8 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
     ): ResponseInterface {
         $response = $handler->handle($request);
 
-        // Only process for backend-authenticated users
-        if (!isset($GLOBALS['BE_USER']) || !$GLOBALS['BE_USER']->user) {
+        // Check for ClickMark access (same-domain BE_USER or cross-domain cookie)
+        if (!$this->hasClickMarkAccess($request)) {
             return $response;
         }
 
@@ -78,6 +81,28 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
         $newBody->write($html);
 
         return $response->withBody($newBody);
+    }
+
+    /**
+     * Check if the current request has ClickMark access.
+     */
+    private function hasClickMarkAccess(ServerRequestInterface $request): bool
+    {
+        // Same-domain: authenticated BE_USER with module access
+        // Check for a real authenticated user (positive UID) to avoid false positives
+        $beUserUid = (int)($GLOBALS['BE_USER']->user['uid'] ?? 0);
+        if ($beUserUid > 0) {
+            return $GLOBALS['BE_USER']->check('modules', 't3clickmark');
+        }
+
+        // Cross-domain: valid session cookie
+        $cookies = $request->getCookieParams();
+        if (isset($cookies['t3cm_session'])) {
+            $tokenService = GeneralUtility::makeInstance(CrossDomainTokenService::class);
+            return $tokenService->validateSessionCookie($cookies['t3cm_session']) !== null;
+        }
+
+        return false;
     }
 
     /**

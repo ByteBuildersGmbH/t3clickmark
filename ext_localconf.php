@@ -18,6 +18,9 @@ ExtensionManagementUtility::addTypoScriptConstants(
     '@import "EXT:t3clickmark/Configuration/TypoScript/constants.typoscript"'
 );
 
+// Exclude cross-domain activation token from cHash validation
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 't3cm_activate';
+
 // Register eID handler for feedback submission from the widget
 $GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['t3clickmark_feedback']
     = \ByteBuilders\T3ClickMark\Controller\FeedbackApiController::class . '::submitAction';
