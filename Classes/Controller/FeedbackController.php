@@ -35,16 +35,18 @@ class FeedbackController extends ActionController
         $feedbacks = $this->feedbackRepository->findFiltered($status, $priority);
         $moduleTemplate->assignMultiple([
             'feedbacks' => $feedbacks,
+            'totalCount' => $feedbacks->count(),
+            'statusCounts' => $this->feedbackRepository->countByStatus(),
             'currentStatus' => $status,
             'currentPriority' => $priority,
-            'statusOptions' => ['', 'open', 'in_progress', 'resolved', 'closed'],
-            'priorityOptions' => ['', 'low', 'medium', 'high'],
+            'statusOptions' => ['' => 'All Statuses', 'open' => 'Open', 'in_progress' => 'In Progress', 'resolved' => 'Resolved', 'closed' => 'Closed'],
+            'priorityOptions' => ['' => 'All Priorities', 'low' => 'Low', 'medium' => 'Medium', 'high' => 'High'],
         ]);
 
         return $moduleTemplate->renderResponse('Feedback/List');
     }
 
-    public function showAction(int $feedback): ResponseInterface
+    public function showAction(int $feedback, string $highlight = ''): ResponseInterface
     {
         $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
@@ -57,16 +59,20 @@ class FeedbackController extends ActionController
         $moduleTemplate->assignMultiple([
             'feedback' => $feedbackObj,
             'annotatedFile' => $annotatedFile,
+            'highlightLatest' => ($highlight === 'latest'),
         ]);
 
         return $moduleTemplate->renderResponse('Feedback/Show');
     }
 
-    public function updateStatusAction(int $feedback, string $status): ResponseInterface
+    public function updateStatusAction(int $feedback, string $status, string $priority = ''): ResponseInterface
     {
         $feedbackObj = $this->feedbackRepository->findByUid($feedback);
         if ($feedbackObj !== null) {
             $feedbackObj->setStatus($status);
+            if ($priority !== '') {
+                $feedbackObj->setPriority($priority);
+            }
             $this->feedbackRepository->update($feedbackObj);
         }
 
@@ -86,7 +92,7 @@ class FeedbackController extends ActionController
             $this->persistenceManager->persistAll();
         }
 
-        return $this->redirect('show', null, null, ['feedback' => $feedback]);
+        return $this->redirect('show', null, null, ['feedback' => $feedback, 'highlight' => 'latest']);
     }
 
     /**

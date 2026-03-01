@@ -8,84 +8,467 @@
 
     <div class="t3cm-list">
 
-        <h1 class="t3cm-list-title">Feedback</h1>
+        <!-- Accent strip -->
+        <div class="t3cm-accent-strip"></div>
 
-        <!-- Filters -->
-        <div class="t3cm-filter-bar">
-            <f:form action="list" method="post" class="d-flex align-items-center gap-3 flex-wrap">
+        <!-- Module header -->
+        <div class="t3cm-module-header">
+            <div class="t3cm-header-top">
+                <div class="t3cm-header-left">
+                    <h1 class="t3cm-brand-title">
+                        <svg class="t3cm-brand-icon" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="128" height="128" rx="24" fill="#fc5130"/>
+                            <rect x="22" y="16" width="76" height="96" rx="12" fill="white"/>
+                            <rect x="32" y="26" width="28" height="5" rx="2.5" fill="#fc5130" opacity="0.1"/>
+                            <rect x="32" y="34" width="56" height="3" rx="1.5" fill="#fc5130" opacity="0.06"/>
+                            <rect x="32" y="39" width="48" height="3" rx="1.5" fill="#fc5130" opacity="0.06"/>
+                            <rect x="30" y="44" width="60" height="34" rx="7" fill="#1b7894" opacity="0.22" stroke="#1b7894" stroke-width="3"/>
+                            <rect x="40" y="54" width="40" height="4" rx="2" fill="#1b7894" opacity="0.4"/>
+                            <rect x="40" y="64" width="30" height="4" rx="2" fill="#1b7894" opacity="0.3"/>
+                            <rect x="32" y="86" width="44" height="3" rx="1.5" fill="#fc5130" opacity="0.06"/>
+                            <rect x="32" y="96" width="44" height="3" rx="1.5" fill="#fc5130" opacity="0.06"/>
+                            <g transform="translate(81, 74)">
+                                <path d="M0 0 L0 20 L5.2 15.4 L9.8 24 L13.5 22.4 L9.2 14 L16 13 Z" fill="white" stroke="#1b7894" stroke-width="2" stroke-linejoin="round"/>
+                            </g>
+                        </svg>
+                        <span class="t3cm-brand-wordmark">
+                            <span class="t3cm-wm-name">ClickMark</span>
+                            <span class="t3cm-wm-label">Feedbacks</span>
+                        </span>
+                    </h1>
+                    <span class="t3cm-header-count">{totalCount} items</span>
+                    <div class="t3cm-view-toggle">
+                        <button type="button" class="t3cm-view-btn t3cm-view-btn--active" data-view="feed">Feed</button>
+                        <button type="button" class="t3cm-view-btn" data-view="compact">Compact</button>
+                        <button type="button" class="t3cm-view-btn" data-view="board">Board</button>
+                    </div>
+                </div>
+                <div class="t3cm-header-right">
+                    <span class="t3cm-version-badge" id="t3cm-version-badge">v0.3.17</span>
+                </div>
+            </div>
+
+            <!-- Status bar (visible in Feed + Compact, hidden in Board) -->
+            <div class="t3cm-header-status" id="t3cm-header-status">
+                <div class="t3cm-status-bar">
+                    <f:if condition="{statusCounts.open}">
+                        <div class="t3cm-status-bar-segment t3cm-status-bar-open" style="flex: {statusCounts.open}"></div>
+                    </f:if>
+                    <f:if condition="{statusCounts.in_progress}">
+                        <div class="t3cm-status-bar-segment t3cm-status-bar-progress" style="flex: {statusCounts.in_progress}"></div>
+                    </f:if>
+                    <f:if condition="{statusCounts.resolved}">
+                        <div class="t3cm-status-bar-segment t3cm-status-bar-resolved" style="flex: {statusCounts.resolved}"></div>
+                    </f:if>
+                    <f:if condition="{statusCounts.closed}">
+                        <div class="t3cm-status-bar-segment t3cm-status-bar-closed" style="flex: {statusCounts.closed}"></div>
+                    </f:if>
+                </div>
+                <div class="t3cm-status-summary">
+                    <span><strong>{statusCounts.open}</strong> Open</span>
+                    <span><strong>{statusCounts.in_progress}</strong> In Progress</span>
+                    <span><strong>{statusCounts.resolved}</strong> Resolved</span>
+                    <span><strong>{statusCounts.closed}</strong> Closed</span>
+                </div>
+            </div>
+
+            <!-- Filter bar (visible in Feed + Compact, hidden in Board) -->
+            <f:form action="list" method="post" class="t3cm-filter-bar" additionalAttributes="{id: 't3cm-filter-bar'}">
                 <div class="t3cm-filter-group">
                     <label class="t3cm-filter-label">Status</label>
-                    <f:form.select property="status" options="{statusOptions}" optionValueField="" optionLabelField=""
-                                   prependOptionLabel="All" prependOptionValue="" value="{currentStatus}"
-                                   class="form-select form-select-sm" />
+                    <f:form.select name="status" options="{statusOptions}" value="{currentStatus}"
+                                   class="t3cm-select" />
                 </div>
                 <div class="t3cm-filter-group">
                     <label class="t3cm-filter-label">Priority</label>
-                    <f:form.select property="priority" options="{priorityOptions}" optionValueField="" optionLabelField=""
-                                   prependOptionLabel="All" prependOptionValue="" value="{currentPriority}"
-                                   class="form-select form-select-sm" />
+                    <f:form.select name="priority" options="{priorityOptions}" value="{currentPriority}"
+                                   class="t3cm-select" />
                 </div>
-                <f:form.submit value="Filter" class="btn btn-sm btn-default" />
+                <f:form.submit value="Filter" class="t3cm-btn t3cm-btn-primary" />
             </f:form>
         </div>
 
-        <f:if condition="{feedbacks}">
-            <f:then>
-                <div class="t3cm-table-wrap">
-                    <table class="t3cm-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 100px">Status</th>
-                                <th>Title</th>
-                                <th style="width: 70px">Page</th>
-                                <th style="width: 90px">Priority</th>
-                                <th>Reporter</th>
-                                <th style="width: 130px">Created</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <f:for each="{feedbacks}" as="feedback">
-                                <tr>
-                                    <td>
+        <!-- ========================================
+             VIEW: FEED (default)
+             ======================================== -->
+        <div class="t3cm-view t3cm-view-feed t3cm-view--active" id="t3cm-view-feed">
+            <f:if condition="{feedbacks}">
+                <f:then>
+                    <div class="t3cm-feed">
+                        <f:for each="{feedbacks}" as="feedback">
+                            <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3cm-feed-row" additionalAttributes="{data-t3cm-priority: feedback.priority, data-t3cm-status: feedback.status}">
+                                <div class="t3cm-feed-main">
+                                    <div class="t3cm-feed-top">
+                                        <span class="t3cm-feed-title">{feedback.title}</span>
+                                        <span class="t3cm-feed-time">
+                                            <f:format.date format="d.m.Y H:i">{feedback.crdate}</f:format.date>
+                                        </span>
+                                    </div>
+                                    <div class="t3cm-feed-bottom">
                                         <f:switch expression="{feedback.status}">
                                             <f:case value="open"><span class="t3cm-badge t3cm-badge-open">Open</span></f:case>
                                             <f:case value="in_progress"><span class="t3cm-badge t3cm-badge-in-progress">In Progress</span></f:case>
                                             <f:case value="resolved"><span class="t3cm-badge t3cm-badge-resolved">Resolved</span></f:case>
                                             <f:case value="closed"><span class="t3cm-badge t3cm-badge-closed">Closed</span></f:case>
                                         </f:switch>
-                                    </td>
-                                    <td>
-                                        <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3cm-table-link">
-                                            {feedback.title}
-                                        </f:link.action>
-                                    </td>
-                                    <td>
-                                        <f:if condition="{feedback.pageUid}">
-                                            #{feedback.pageUid}
-                                        </f:if>
-                                    </td>
-                                    <td>
+                                        <f:switch expression="{feedback.category}">
+                                            <f:case value="bug"><span class="t3cm-badge t3cm-badge-bug">Bug</span></f:case>
+                                            <f:case value="change_request"><span class="t3cm-badge t3cm-badge-change-request">Change</span></f:case>
+                                            <f:case value="question"><span class="t3cm-badge t3cm-badge-question">Question</span></f:case>
+                                        </f:switch>
                                         <f:switch expression="{feedback.priority}">
                                             <f:case value="low"><span class="t3cm-badge t3cm-badge-low">Low</span></f:case>
                                             <f:case value="medium"><span class="t3cm-badge t3cm-badge-medium">Medium</span></f:case>
                                             <f:case value="high"><span class="t3cm-badge t3cm-badge-high">High</span></f:case>
                                         </f:switch>
-                                    </td>
-                                    <td>{feedback.backendUsername}</td>
-                                    <td><f:format.date format="d.m.Y H:i">{feedback.crdate}</f:format.date></td>
-                                </tr>
-                            </f:for>
-                        </tbody>
-                    </table>
-                </div>
-            </f:then>
-            <f:else>
-                <div class="t3cm-list-empty">
-                    <p>No feedback submissions yet.</p>
-                    <p>Feedback will appear here once submitted via the T3ClickMark widget on the frontend.</p>
-                </div>
-            </f:else>
-        </f:if>
+                                        <span class="t3cm-feed-divider"></span>
+                                        <span class="t3cm-feed-meta">
+                                            <f:if condition="{feedback.pageUid}">
+                                                <span>Page #{feedback.pageUid}</span>
+                                            </f:if>
+                                            <f:if condition="{feedback.contentType}">
+                                                <span>{feedback.contentType}</span>
+                                            </f:if>
+                                            <span>{feedback.backendUsername}</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="t3cm-feed-thumb-placeholder">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                </div>
+                            </f:link.action>
+                        </f:for>
+                    </div>
+                </f:then>
+                <f:else>
+                    <f:if condition="{currentStatus} || {currentPriority}">
+                        <f:then>
+                            <div class="t3cm-empty">
+                                <h3>No results match your filters</h3>
+                                <p>Try adjusting your criteria or <f:link.action action="list" class="t3cm-link">clear all filters</f:link.action>.</p>
+                            </div>
+                        </f:then>
+                        <f:else>
+                            <div class="t3cm-empty">
+                                <svg class="t3cm-empty-icon" viewBox="0 0 48 48" fill="none">
+                                    <rect x="8" y="6" width="32" height="36" rx="4" stroke="currentColor" stroke-width="1.5" opacity="0.2"/>
+                                    <line x1="14" y1="16" x2="34" y2="16" stroke="currentColor" stroke-width="1.5" opacity="0.15"/>
+                                    <line x1="14" y1="22" x2="30" y2="22" stroke="currentColor" stroke-width="1.5" opacity="0.12"/>
+                                    <line x1="14" y1="28" x2="26" y2="28" stroke="currentColor" stroke-width="1.5" opacity="0.08"/>
+                                </svg>
+                                <h3>No feedback yet</h3>
+                                <p>Feedback will appear here once submitted via the ClickMark widget on any frontend page.</p>
+                            </div>
+                        </f:else>
+                    </f:if>
+                </f:else>
+            </f:if>
+        </div>
+
+        <!-- ========================================
+             VIEW: COMPACT
+             ======================================== -->
+        <div class="t3cm-view t3cm-view-compact" id="t3cm-view-compact">
+            <f:if condition="{feedbacks}">
+                <f:then>
+                    <div class="t3cm-compact-list">
+                        <!-- Column labels -->
+                        <div class="t3cm-col-labels">
+                            <span class="col-priority"></span>
+                            <span class="col-title">Title</span>
+                            <span class="col-category">Type</span>
+                            <span class="col-page">Page</span>
+                            <span class="col-time">Time</span>
+                        </div>
+
+                        <!-- Open group -->
+                        <div class="t3cm-group-header">
+                            <span class="t3cm-group-dot t3cm-group-dot--open"></span>
+                            <span class="t3cm-group-label">Open</span>
+                            <span class="t3cm-group-count">{statusCounts.open}</span>
+                            <span class="t3cm-group-line"></span>
+                        </div>
+                        <f:for each="{feedbacks}" as="feedback">
+                            <f:if condition="{feedback.status} == 'open'">
+                                <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3cm-dense-row" additionalAttributes="{data-t3cm-priority: feedback.priority, data-t3cm-status: feedback.status}">
+                                    <span class="t3cm-priority-dot t3cm-priority-dot--{feedback.priority}"></span>
+                                    <span class="t3cm-dense-title">{feedback.title}</span>
+                                    <f:switch expression="{feedback.category}">
+                                        <f:case value="bug"><span class="t3cm-dense-category t3cm-badge-bug">Bug</span></f:case>
+                                        <f:case value="change_request"><span class="t3cm-dense-category t3cm-badge-change-request">Change</span></f:case>
+                                        <f:case value="question"><span class="t3cm-dense-category t3cm-badge-question">Question</span></f:case>
+                                    </f:switch>
+                                    <span class="t3cm-dense-page"><f:if condition="{feedback.pageUid}"><f:then>#{feedback.pageUid}</f:then><f:else>&mdash;</f:else></f:if></span>
+                                    <span class="t3cm-dense-time"><f:format.date format="d.m.Y">{feedback.crdate}</f:format.date></span>
+                                </f:link.action>
+                            </f:if>
+                        </f:for>
+
+                        <!-- In Progress group -->
+                        <div class="t3cm-group-header">
+                            <span class="t3cm-group-dot t3cm-group-dot--progress"></span>
+                            <span class="t3cm-group-label">In Progress</span>
+                            <span class="t3cm-group-count">{statusCounts.in_progress}</span>
+                            <span class="t3cm-group-line"></span>
+                        </div>
+                        <f:for each="{feedbacks}" as="feedback">
+                            <f:if condition="{feedback.status} == 'in_progress'">
+                                <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3cm-dense-row" additionalAttributes="{data-t3cm-priority: feedback.priority, data-t3cm-status: feedback.status}">
+                                    <span class="t3cm-priority-dot t3cm-priority-dot--{feedback.priority}"></span>
+                                    <span class="t3cm-dense-title">{feedback.title}</span>
+                                    <f:switch expression="{feedback.category}">
+                                        <f:case value="bug"><span class="t3cm-dense-category t3cm-badge-bug">Bug</span></f:case>
+                                        <f:case value="change_request"><span class="t3cm-dense-category t3cm-badge-change-request">Change</span></f:case>
+                                        <f:case value="question"><span class="t3cm-dense-category t3cm-badge-question">Question</span></f:case>
+                                    </f:switch>
+                                    <span class="t3cm-dense-page"><f:if condition="{feedback.pageUid}"><f:then>#{feedback.pageUid}</f:then><f:else>&mdash;</f:else></f:if></span>
+                                    <span class="t3cm-dense-time"><f:format.date format="d.m.Y">{feedback.crdate}</f:format.date></span>
+                                </f:link.action>
+                            </f:if>
+                        </f:for>
+
+                        <!-- Resolved group -->
+                        <div class="t3cm-group-header">
+                            <span class="t3cm-group-dot t3cm-group-dot--resolved"></span>
+                            <span class="t3cm-group-label">Resolved</span>
+                            <span class="t3cm-group-count">{statusCounts.resolved}</span>
+                            <span class="t3cm-group-line"></span>
+                        </div>
+                        <f:for each="{feedbacks}" as="feedback">
+                            <f:if condition="{feedback.status} == 'resolved'">
+                                <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3cm-dense-row" additionalAttributes="{data-t3cm-priority: feedback.priority, data-t3cm-status: feedback.status}">
+                                    <span class="t3cm-priority-dot t3cm-priority-dot--{feedback.priority}"></span>
+                                    <span class="t3cm-dense-title">{feedback.title}</span>
+                                    <f:switch expression="{feedback.category}">
+                                        <f:case value="bug"><span class="t3cm-dense-category t3cm-badge-bug">Bug</span></f:case>
+                                        <f:case value="change_request"><span class="t3cm-dense-category t3cm-badge-change-request">Change</span></f:case>
+                                        <f:case value="question"><span class="t3cm-dense-category t3cm-badge-question">Question</span></f:case>
+                                    </f:switch>
+                                    <span class="t3cm-dense-page"><f:if condition="{feedback.pageUid}"><f:then>#{feedback.pageUid}</f:then><f:else>&mdash;</f:else></f:if></span>
+                                    <span class="t3cm-dense-time"><f:format.date format="d.m.Y">{feedback.crdate}</f:format.date></span>
+                                </f:link.action>
+                            </f:if>
+                        </f:for>
+
+                        <!-- Closed group -->
+                        <div class="t3cm-group-header">
+                            <span class="t3cm-group-dot t3cm-group-dot--closed"></span>
+                            <span class="t3cm-group-label">Closed</span>
+                            <span class="t3cm-group-count">{statusCounts.closed}</span>
+                            <span class="t3cm-group-line"></span>
+                        </div>
+                        <f:for each="{feedbacks}" as="feedback">
+                            <f:if condition="{feedback.status} == 'closed'">
+                                <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3cm-dense-row" additionalAttributes="{data-t3cm-priority: feedback.priority, data-t3cm-status: feedback.status}">
+                                    <span class="t3cm-priority-dot t3cm-priority-dot--{feedback.priority}"></span>
+                                    <span class="t3cm-dense-title">{feedback.title}</span>
+                                    <f:switch expression="{feedback.category}">
+                                        <f:case value="bug"><span class="t3cm-dense-category t3cm-badge-bug">Bug</span></f:case>
+                                        <f:case value="change_request"><span class="t3cm-dense-category t3cm-badge-change-request">Change</span></f:case>
+                                        <f:case value="question"><span class="t3cm-dense-category t3cm-badge-question">Question</span></f:case>
+                                    </f:switch>
+                                    <span class="t3cm-dense-page"><f:if condition="{feedback.pageUid}"><f:then>#{feedback.pageUid}</f:then><f:else>&mdash;</f:else></f:if></span>
+                                    <span class="t3cm-dense-time"><f:format.date format="d.m.Y">{feedback.crdate}</f:format.date></span>
+                                </f:link.action>
+                            </f:if>
+                        </f:for>
+                    </div>
+                </f:then>
+                <f:else>
+                    <div class="t3cm-empty">
+                        <h3>No feedback yet</h3>
+                        <p>Feedback will appear here once submitted via the ClickMark widget.</p>
+                    </div>
+                </f:else>
+            </f:if>
+        </div>
+
+        <!-- ========================================
+             VIEW: BOARD (kanban)
+             ======================================== -->
+        <div class="t3cm-view t3cm-view-board" id="t3cm-view-board">
+            <f:if condition="{feedbacks}">
+                <f:then>
+                    <div class="t3cm-board">
+
+                        <!-- OPEN Column -->
+                        <div class="t3cm-column" id="t3cm-col-open">
+                            <div class="t3cm-column-header">
+                                <div class="t3cm-column-header-left">
+                                    <span class="t3cm-column-accent t3cm-column-accent--open"></span>
+                                    <span class="t3cm-column-name">Open</span>
+                                    <span class="t3cm-column-count">{statusCounts.open}</span>
+                                </div>
+                                <button type="button" class="t3cm-column-toggle" data-t3cm-toggle-col="t3cm-col-open" title="Collapse">&#9660;</button>
+                            </div>
+                            <div class="t3cm-column-expand" data-t3cm-toggle-col="t3cm-col-open">Click to expand</div>
+                            <div class="t3cm-column-cards">
+                                <f:for each="{feedbacks}" as="feedback">
+                                    <f:if condition="{feedback.status} == 'open'">
+                                        <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3cm-board-card" additionalAttributes="{data-t3cm-priority: feedback.priority}">
+                                            <div class="t3cm-board-card-title">{feedback.title}</div>
+                                            <div class="t3cm-board-card-badges">
+                                                <f:switch expression="{feedback.category}">
+                                                    <f:case value="bug"><span class="t3cm-badge t3cm-badge-bug">Bug</span></f:case>
+                                                    <f:case value="change_request"><span class="t3cm-badge t3cm-badge-change-request">Change</span></f:case>
+                                                    <f:case value="question"><span class="t3cm-badge t3cm-badge-question">Question</span></f:case>
+                                                </f:switch>
+                                                <f:switch expression="{feedback.priority}">
+                                                    <f:case value="low"><span class="t3cm-badge t3cm-badge-low">Low</span></f:case>
+                                                    <f:case value="medium"><span class="t3cm-badge t3cm-badge-medium">Medium</span></f:case>
+                                                    <f:case value="high"><span class="t3cm-badge t3cm-badge-high">High</span></f:case>
+                                                </f:switch>
+                                            </div>
+                                            <div class="t3cm-board-card-meta">
+                                                <div class="t3cm-board-card-meta-left">
+                                                    <f:if condition="{feedback.pageUid}">
+                                                        <span class="t3cm-board-card-page">Page #{feedback.pageUid}</span>
+                                                    </f:if>
+                                                </div>
+                                                <span class="t3cm-board-card-time"><f:format.date format="d.m.Y">{feedback.crdate}</f:format.date></span>
+                                            </div>
+                                        </f:link.action>
+                                    </f:if>
+                                </f:for>
+                            </div>
+                        </div>
+
+                        <!-- IN PROGRESS Column -->
+                        <div class="t3cm-column" id="t3cm-col-progress">
+                            <div class="t3cm-column-header">
+                                <div class="t3cm-column-header-left">
+                                    <span class="t3cm-column-accent t3cm-column-accent--progress"></span>
+                                    <span class="t3cm-column-name">In Progress</span>
+                                    <span class="t3cm-column-count">{statusCounts.in_progress}</span>
+                                </div>
+                                <button type="button" class="t3cm-column-toggle" data-t3cm-toggle-col="t3cm-col-progress" title="Collapse">&#9660;</button>
+                            </div>
+                            <div class="t3cm-column-expand" data-t3cm-toggle-col="t3cm-col-progress">Click to expand</div>
+                            <div class="t3cm-column-cards">
+                                <f:for each="{feedbacks}" as="feedback">
+                                    <f:if condition="{feedback.status} == 'in_progress'">
+                                        <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3cm-board-card" additionalAttributes="{data-t3cm-priority: feedback.priority}">
+                                            <div class="t3cm-board-card-title">{feedback.title}</div>
+                                            <div class="t3cm-board-card-badges">
+                                                <f:switch expression="{feedback.category}">
+                                                    <f:case value="bug"><span class="t3cm-badge t3cm-badge-bug">Bug</span></f:case>
+                                                    <f:case value="change_request"><span class="t3cm-badge t3cm-badge-change-request">Change</span></f:case>
+                                                    <f:case value="question"><span class="t3cm-badge t3cm-badge-question">Question</span></f:case>
+                                                </f:switch>
+                                                <f:switch expression="{feedback.priority}">
+                                                    <f:case value="low"><span class="t3cm-badge t3cm-badge-low">Low</span></f:case>
+                                                    <f:case value="medium"><span class="t3cm-badge t3cm-badge-medium">Medium</span></f:case>
+                                                    <f:case value="high"><span class="t3cm-badge t3cm-badge-high">High</span></f:case>
+                                                </f:switch>
+                                            </div>
+                                            <div class="t3cm-board-card-meta">
+                                                <div class="t3cm-board-card-meta-left">
+                                                    <f:if condition="{feedback.pageUid}">
+                                                        <span class="t3cm-board-card-page">Page #{feedback.pageUid}</span>
+                                                    </f:if>
+                                                </div>
+                                                <span class="t3cm-board-card-time"><f:format.date format="d.m.Y">{feedback.crdate}</f:format.date></span>
+                                            </div>
+                                        </f:link.action>
+                                    </f:if>
+                                </f:for>
+                            </div>
+                        </div>
+
+                        <!-- RESOLVED Column -->
+                        <div class="t3cm-column" id="t3cm-col-resolved">
+                            <div class="t3cm-column-header">
+                                <div class="t3cm-column-header-left">
+                                    <span class="t3cm-column-accent t3cm-column-accent--resolved"></span>
+                                    <span class="t3cm-column-name">Resolved</span>
+                                    <span class="t3cm-column-count">{statusCounts.resolved}</span>
+                                </div>
+                                <button type="button" class="t3cm-column-toggle" data-t3cm-toggle-col="t3cm-col-resolved" title="Collapse">&#9660;</button>
+                            </div>
+                            <div class="t3cm-column-expand" data-t3cm-toggle-col="t3cm-col-resolved">Click to expand</div>
+                            <div class="t3cm-column-cards">
+                                <f:for each="{feedbacks}" as="feedback">
+                                    <f:if condition="{feedback.status} == 'resolved'">
+                                        <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3cm-board-card" additionalAttributes="{data-t3cm-priority: feedback.priority}">
+                                            <div class="t3cm-board-card-title">{feedback.title}</div>
+                                            <div class="t3cm-board-card-badges">
+                                                <f:switch expression="{feedback.category}">
+                                                    <f:case value="bug"><span class="t3cm-badge t3cm-badge-bug">Bug</span></f:case>
+                                                    <f:case value="change_request"><span class="t3cm-badge t3cm-badge-change-request">Change</span></f:case>
+                                                    <f:case value="question"><span class="t3cm-badge t3cm-badge-question">Question</span></f:case>
+                                                </f:switch>
+                                                <f:switch expression="{feedback.priority}">
+                                                    <f:case value="low"><span class="t3cm-badge t3cm-badge-low">Low</span></f:case>
+                                                    <f:case value="medium"><span class="t3cm-badge t3cm-badge-medium">Medium</span></f:case>
+                                                    <f:case value="high"><span class="t3cm-badge t3cm-badge-high">High</span></f:case>
+                                                </f:switch>
+                                            </div>
+                                            <div class="t3cm-board-card-meta">
+                                                <div class="t3cm-board-card-meta-left">
+                                                    <f:if condition="{feedback.pageUid}">
+                                                        <span class="t3cm-board-card-page">Page #{feedback.pageUid}</span>
+                                                    </f:if>
+                                                </div>
+                                                <span class="t3cm-board-card-time"><f:format.date format="d.m.Y">{feedback.crdate}</f:format.date></span>
+                                            </div>
+                                        </f:link.action>
+                                    </f:if>
+                                </f:for>
+                            </div>
+                        </div>
+
+                        <!-- CLOSED Column -->
+                        <div class="t3cm-column" id="t3cm-col-closed">
+                            <div class="t3cm-column-header">
+                                <div class="t3cm-column-header-left">
+                                    <span class="t3cm-column-accent t3cm-column-accent--closed"></span>
+                                    <span class="t3cm-column-name">Closed</span>
+                                    <span class="t3cm-column-count">{statusCounts.closed}</span>
+                                </div>
+                                <button type="button" class="t3cm-column-toggle" data-t3cm-toggle-col="t3cm-col-closed" title="Collapse">&#9660;</button>
+                            </div>
+                            <div class="t3cm-column-expand" data-t3cm-toggle-col="t3cm-col-closed">Click to expand</div>
+                            <div class="t3cm-column-cards">
+                                <f:for each="{feedbacks}" as="feedback">
+                                    <f:if condition="{feedback.status} == 'closed'">
+                                        <f:link.action action="show" arguments="{feedback: feedback.uid}" class="t3cm-board-card" additionalAttributes="{data-t3cm-priority: feedback.priority}">
+                                            <div class="t3cm-board-card-title">{feedback.title}</div>
+                                            <div class="t3cm-board-card-badges">
+                                                <f:switch expression="{feedback.category}">
+                                                    <f:case value="bug"><span class="t3cm-badge t3cm-badge-bug">Bug</span></f:case>
+                                                    <f:case value="change_request"><span class="t3cm-badge t3cm-badge-change-request">Change</span></f:case>
+                                                    <f:case value="question"><span class="t3cm-badge t3cm-badge-question">Question</span></f:case>
+                                                </f:switch>
+                                                <f:switch expression="{feedback.priority}">
+                                                    <f:case value="low"><span class="t3cm-badge t3cm-badge-low">Low</span></f:case>
+                                                    <f:case value="medium"><span class="t3cm-badge t3cm-badge-medium">Medium</span></f:case>
+                                                    <f:case value="high"><span class="t3cm-badge t3cm-badge-high">High</span></f:case>
+                                                </f:switch>
+                                            </div>
+                                            <div class="t3cm-board-card-meta">
+                                                <div class="t3cm-board-card-meta-left">
+                                                    <f:if condition="{feedback.pageUid}">
+                                                        <span class="t3cm-board-card-page">Page #{feedback.pageUid}</span>
+                                                    </f:if>
+                                                </div>
+                                                <span class="t3cm-board-card-time"><f:format.date format="d.m.Y">{feedback.crdate}</f:format.date></span>
+                                            </div>
+                                        </f:link.action>
+                                    </f:if>
+                                </f:for>
+                            </div>
+                        </div>
+
+                    </div>
+                </f:then>
+                <f:else>
+                    <div class="t3cm-empty">
+                        <h3>No feedback yet</h3>
+                        <p>Feedback will appear here once submitted via the ClickMark widget.</p>
+                    </div>
+                </f:else>
+            </f:if>
+        </div>
 
     </div>
 

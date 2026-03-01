@@ -51,7 +51,7 @@ class FeedbackApiController
         // We need the file for both local FAL storage and AgencyDesk forwarding.
         $screenshotTempPath = null;
         if (!empty($uploadedFiles['annotatedScreenshot'])) {
-            $screenshotTempPath = GeneralUtility::tempnam('t3cm_fwd_') . '.png';
+            $screenshotTempPath = GeneralUtility::tempnam('t3cm_fwd_') . '.jpg';
             $stream = $uploadedFiles['annotatedScreenshot']->getStream();
             $stream->rewind();
             file_put_contents($screenshotTempPath, $stream->getContents());
@@ -162,10 +162,10 @@ class FeedbackApiController
         $targetFolder = $storage->getFolder($targetFolderPath);
 
         // Generate a unique filename
-        $filename = sprintf('feedback_%d_%s_%s.png', $feedbackUid, $fieldName, uniqid());
+        $filename = sprintf('feedback_%d_%s_%s.jpg', $feedbackUid, $fieldName, uniqid());
 
         // Use PSR-7 moveTo() — the standard way to persist uploaded files.
-        $tempFile = GeneralUtility::tempnam('t3cm_') . '.png';
+        $tempFile = GeneralUtility::tempnam('t3cm_') . '.jpg';
         $uploadedFile->moveTo($tempFile);
 
         if (!file_exists($tempFile) || filesize($tempFile) === 0) {
@@ -287,8 +287,8 @@ class FeedbackApiController
         if ($screenshotPath !== null && file_exists($screenshotPath)) {
             $fileContent = file_get_contents($screenshotPath);
             $body .= '--' . $boundary . "\r\n";
-            $body .= 'Content-Disposition: form-data; name="annotatedScreenshot"; filename="annotated.png"' . "\r\n";
-            $body .= 'Content-Type: image/png' . "\r\n\r\n";
+            $body .= 'Content-Disposition: form-data; name="annotatedScreenshot"; filename="annotated.jpg"' . "\r\n";
+            $body .= 'Content-Type: image/jpeg' . "\r\n\r\n";
             $body .= $fileContent . "\r\n";
         }
 

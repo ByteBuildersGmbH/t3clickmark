@@ -3,9 +3,21 @@
  *
  * Creates a full-viewport overlay appended to <body> to bypass
  * TYPO3 backend module stacking context constraints.
+ *
+ * Entrance: overlay + image fade in with scale (300ms ease-out).
+ * Exit: reverse animation (250ms ease-in), then remove from DOM.
  */
 (function () {
     'use strict';
+
+    var CLOSE_DURATION = 250;
+
+    function closeLightbox(overlay) {
+        overlay.classList.add('t3cm-lightbox-overlay--closing');
+        setTimeout(function () {
+            overlay.remove();
+        }, CLOSE_DURATION);
+    }
 
     document.addEventListener('click', function (e) {
         var trigger = e.target.closest('[data-t3cm-lightbox]');
@@ -26,13 +38,13 @@
 
         // Close on click anywhere
         overlay.addEventListener('click', function () {
-            overlay.remove();
+            closeLightbox(overlay);
         });
 
         // Close on Escape key
         var onKey = function (ev) {
             if (ev.key === 'Escape') {
-                overlay.remove();
+                closeLightbox(overlay);
                 document.removeEventListener('keydown', onKey);
             }
         };

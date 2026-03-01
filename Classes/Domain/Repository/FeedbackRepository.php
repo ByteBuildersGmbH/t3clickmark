@@ -24,6 +24,21 @@ class FeedbackRepository extends Repository
         $this->setDefaultQuerySettings($querySettings);
     }
 
+    /**
+     * Returns per-status counts for the status summary bar.
+     * @return array<string, int>
+     */
+    public function countByStatus(): array
+    {
+        $counts = ['open' => 0, 'in_progress' => 0, 'resolved' => 0, 'closed' => 0];
+        foreach ($counts as $status => $val) {
+            $query = $this->createQuery();
+            $query->matching($query->equals('status', $status));
+            $counts[$status] = $query->count();
+        }
+        return $counts;
+    }
+
     public function findFiltered(string $status = '', string $priority = ''): QueryResultInterface
     {
         $query = $this->createQuery();

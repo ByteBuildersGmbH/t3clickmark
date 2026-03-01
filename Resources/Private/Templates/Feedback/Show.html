@@ -184,22 +184,34 @@
                     </div>
                 </f:if>
 
-                <!-- Change Status -->
+                <!-- Manage Ticket -->
                 <div class="t3cm-card">
-                    <div class="t3cm-card-header">Change Status</div>
+                    <div class="t3cm-card-header">Manage Ticket</div>
                     <div class="t3cm-card-body">
                         <f:form action="updateStatus" method="post">
                             <f:form.hidden name="feedback" value="{feedback.uid}" />
-                            <div class="input-group">
-                                <f:form.select name="status" class="form-select form-select-sm"
-                                               value="{feedback.status}">
-                                    <f:form.select.option value="open">Open</f:form.select.option>
-                                    <f:form.select.option value="in_progress">In Progress</f:form.select.option>
-                                    <f:form.select.option value="resolved">Resolved</f:form.select.option>
-                                    <f:form.select.option value="closed">Closed</f:form.select.option>
-                                </f:form.select>
-                                <f:form.submit value="Update" class="btn btn-sm btn-default" />
+                            <div class="t3cm-manage-fields">
+                                <div class="t3cm-manage-field">
+                                    <label class="t3cm-manage-label">Status</label>
+                                    <f:form.select name="status" class="form-select form-select-sm"
+                                                   value="{feedback.status}">
+                                        <f:form.select.option value="open">Open</f:form.select.option>
+                                        <f:form.select.option value="in_progress">In Progress</f:form.select.option>
+                                        <f:form.select.option value="resolved">Resolved</f:form.select.option>
+                                        <f:form.select.option value="closed">Closed</f:form.select.option>
+                                    </f:form.select>
+                                </div>
+                                <div class="t3cm-manage-field">
+                                    <label class="t3cm-manage-label">Priority</label>
+                                    <f:form.select name="priority" class="form-select form-select-sm"
+                                                   value="{feedback.priority}">
+                                        <f:form.select.option value="low">Low</f:form.select.option>
+                                        <f:form.select.option value="medium">Medium</f:form.select.option>
+                                        <f:form.select.option value="high">High</f:form.select.option>
+                                    </f:form.select>
+                                </div>
                             </div>
+                            <f:form.submit value="Update" class="btn btn-sm btn-primary t3cm-manage-submit" />
                         </f:form>
                     </div>
                 </div>
@@ -212,8 +224,8 @@
             <div class="t3cm-card-body">
                 <f:if condition="{feedback.comments}">
                     <div class="t3cm-comments-list">
-                        <f:for each="{feedback.comments}" as="comment">
-                            <div class="t3cm-comment">
+                        <f:for each="{feedback.comments}" as="comment" iteration="iter">
+                            <div class="t3cm-comment{f:if(condition: '{highlightLatest} && {iter.isLast}', then: ' t3cm-comment--new')}">
                                 <div class="t3cm-comment-header">
                                     <strong class="t3cm-comment-author">{comment.authorName}</strong>
                                     <span class="t3cm-comment-date">

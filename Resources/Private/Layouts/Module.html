@@ -1,36 +1,11 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
       data-namespace-typo3-fluid="true">
 
-<link rel="stylesheet" href="{f:uri.resource(path:'Css/backend-module.css', extensionName:'t3clickmark')}" />
+<link rel="stylesheet" href="{f:uri.resource(path:'Css/backend-module.css', extensionName:'t3clickmark')}?v=0317" />
 
 <f:render section="Content" />
 
-<script src="{f:uri.resource(path:'JavaScript/backend-lightbox.js', extensionName:'t3clickmark')}"></script>
-
-<script>
-(function() {
-    var el = document.querySelector('.t3cm-list, .t3cm-detail');
-    if (!el) return;
-
-    // Version badge: inject into content container via JS
-    el.style.position = 'relative';
-    var badge = document.createElement('div');
-    badge.textContent = 'v0.3.2';
-    badge.style.cssText = 'position:absolute;top:4px;right:8px;font-size:10px;color:#94a3b8;font-weight:600;background:#334155;padding:2px 8px;border-radius:4px;border:1px solid #475569;font-family:-apple-system,sans-serif;z-index:999;';
-    el.appendChild(badge);
-
-    // Full width: remove max-width on all ancestors
-    var parent = el.parentElement;
-    while (parent && parent !== document.body && parent !== document.documentElement) {
-        parent.style.maxWidth = 'none';
-        parent.style.width = '100%';
-        parent.style.boxSizing = 'border-box';
-        parent = parent.parentElement;
-    }
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    document.body.style.width = '100%';
-})();
-</script>
+<script src="{f:uri.resource(path:'JavaScript/backend-lightbox.js', extensionName:'t3clickmark')}?v=0317"></script>
+<script src="{f:uri.resource(path:'JavaScript/backend-views.js', extensionName:'t3clickmark')}?v=0317"></script>
 
 </html>
