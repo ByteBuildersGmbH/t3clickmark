@@ -1,2 +1,2 @@
-# This file is intentionally empty.
-# API key is managed programmatically via ExtensionConfiguration::set().
+# cat=test; type=boolean; label=Enable test mode API endpoints (local development only — never enable in production)
+testModeEnabled = 0

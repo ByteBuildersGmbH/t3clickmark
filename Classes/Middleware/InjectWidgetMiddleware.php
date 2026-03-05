@@ -61,7 +61,7 @@ class InjectWidgetMiddleware implements MiddlewareInterface
             return $response;
         }
 
-        $widgetHtml = $this->buildWidgetHtml($backendUser);
+        $widgetHtml = $this->buildWidgetHtml($backendUser, $request);
         $html = str_replace('</body>', $widgetHtml . "\n</body>", $html);
 
         $newBody = new Stream('php://temp', 'rw');
@@ -175,12 +175,19 @@ class InjectWidgetMiddleware implements MiddlewareInterface
         ];
     }
 
-    private function buildWidgetHtml(array $backendUser): string
+    private function buildWidgetHtml(array $backendUser, ServerRequestInterface $request): string
     {
         $config = $this->buildWidgetConfig($backendUser);
         $scriptPath = PathUtility::getAbsoluteWebPath(
             ExtensionManagementUtility::extPath('t3clickmark', 'Resources/Public/JavaScript/t3clickmark-widget.min.js')
         );
+
+        // Cache buster for test mode — ensures browser loads the latest widget build
+        $queryParams = $request->getQueryParams();
+        if (isset($queryParams['clickmark-test'])) {
+            $cacheBuster = $queryParams['t'] ?? time();
+            $scriptPath .= '?t=' . $cacheBuster;
+        }
 
         $configJson = json_encode($config, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
 

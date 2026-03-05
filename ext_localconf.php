@@ -21,6 +21,18 @@ ExtensionManagementUtility::addTypoScriptConstants(
 // Exclude cross-domain activation token from cHash validation
 $GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 't3cm_activate';
 
+// Exclude test mode URL parameters from cHash validation
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'clickmark-test';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'browser';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'version';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'scrollY';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'elements';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'selectors';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'globalElements';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'captureTypes';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 'contentSelector';
+$GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 't';
+
 // Register eID handler for feedback submission from the widget
 $GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['t3clickmark_feedback']
     = \ByteBuilders\T3ClickMark\Controller\FeedbackApiController::class . '::submitAction';
