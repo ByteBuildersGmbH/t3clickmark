@@ -1,2 +1,5 @@
+# cat=agencydesk; type=string; label=AgencyDesk API Key:64-character API key from your AgencyDesk project. Leave empty for local-only mode.
+apiKey =
+
 # cat=test; type=boolean; label=Enable test mode API endpoints (local development only — never enable in production)
 testModeEnabled = 0

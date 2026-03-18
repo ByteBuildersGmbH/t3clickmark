@@ -99,11 +99,14 @@ class DocHeaderFeedbackButton
             $site = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByPageId($pageUid);
             $siteBase = rtrim((string)$site->getBase(), '/');
             $generatedUri = (string)$site->getRouter()->generateUri((string)$pageUid);
-            // Ensure absolute URL
+
             if (str_starts_with($generatedUri, 'http')) {
                 $pageUrl = $generatedUri;
-            } else {
+            } elseif (str_starts_with($siteBase, 'http')) {
                 $pageUrl = $siteBase . '/' . ltrim($generatedUri, '/');
+            } elseif ($normalizedParams) {
+                // Site base is relative (e.g. "/") — use the request's site URL as domain
+                $pageUrl = rtrim($normalizedParams->getSiteUrl(), '/') . '/' . ltrim($generatedUri, '/');
             }
         } catch (\Throwable $e) {
             // Site config not available — leave empty

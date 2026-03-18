@@ -118,7 +118,7 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
             $ctype = $matches[3];
             $tag = $matches[4];
 
-            $backendLink = $siteBase . '/typo3/record/edit?edit[tt_content][' . $uid . ']=edit';
+            $backendLink = $siteBase . '/typo3/record/edit?edit%5Btt_content%5D%5B' . $uid . '%5D=edit';
 
             return $tag
                 . ' data-t3cm-uid="' . $uid . '"'
@@ -160,7 +160,7 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
 
         // For each found content element, inject data attributes onto its opening tag
         foreach ($contentData as $uid => $data) {
-            $backendLink = $siteBase . '/typo3/record/edit?edit[tt_content][' . $uid . ']=edit';
+            $backendLink = $siteBase . '/typo3/record/edit?edit%5Btt_content%5D%5B' . $uid . '%5D=edit';
 
             $attrs = ' data-t3cm-uid="' . $uid . '"'
                 . ' data-t3cm-pid="' . (int)$data['pid'] . '"'
