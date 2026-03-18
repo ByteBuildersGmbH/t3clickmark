@@ -14,27 +14,28 @@ return [
         ],
         'searchFields' => 'title,description,backend_username,page_url',
         'iconIdentifier' => 't3clickmark-module-feedback',
+        'rootLevel' => -1,
     ],
     'types' => [
         '1' => [
             'showitem' => '
                 --div--;LLL:EXT:core/Resources/Private/Language/Form/locallang_tabs.xlf:general,
-                    title, description, status, priority, category,
-                --div--;Feedback Context,
-                    page_uid, content_uid, content_type, page_url, backend_edit_link,
-                --div--;Browser Info,
-                    browser_info, viewport, css_selector,
-                --div--;Diagnostics,
-                    console_errors, console_warnings, failed_requests,
-                --div--;Screenshot,
-                    annotated_screenshot,
-                --div--;User,
-                    backend_user, backend_username,
-                --div--;External Sync,
-                    external_id, external_url, synced_at,
-                --div--;Comments,
-                    comments,
+                    title, description,
+                    --palette--;;priority_category,
+                --div--;Attachments,
+                    annotated_screenshot, attachments,
+                --div--;Element Context,
+                    --palette--;;element_context,
+                    page_url, backend_edit_link,
             ',
+        ],
+    ],
+    'palettes' => [
+        'priority_category' => [
+            'showitem' => 'priority, category, status',
+        ],
+        'element_context' => [
+            'showitem' => 'content_uid, page_uid, content_type',
         ],
     ],
     'columns' => [
@@ -116,6 +117,7 @@ return [
             'config' => [
                 'type' => 'number',
                 'size' => 10,
+                'readOnly' => true,
             ],
         ],
         'content_uid' => [
@@ -123,6 +125,7 @@ return [
             'config' => [
                 'type' => 'number',
                 'size' => 10,
+                'readOnly' => true,
             ],
         ],
         'content_type' => [
@@ -209,6 +212,14 @@ return [
                 'type' => 'file',
                 'maxitems' => 1,
                 'allowed' => 'png,jpg,jpeg,webp',
+            ],
+        ],
+        'attachments' => [
+            'label' => 'Attachments',
+            'config' => [
+                'type' => 'file',
+                'maxitems' => 5,
+                'allowed' => 'png,jpg,jpeg,webp,gif,pdf',
             ],
         ],
         'backend_user' => [

@@ -39,6 +39,10 @@ class Feedback extends AbstractEntity
     // Screenshot (FAL)
     protected ?FileReference $annotatedScreenshot = null;
 
+    // Attachments (FAL — images, PDFs)
+    /** @var ObjectStorage<FileReference> */
+    protected ObjectStorage $attachments;
+
     // TYPO3 backend user
     protected int $backendUser = 0;
     protected string $backendUsername = '';
@@ -54,6 +58,7 @@ class Feedback extends AbstractEntity
 
     public function __construct()
     {
+        $this->attachments = new ObjectStorage();
         $this->comments = new ObjectStorage();
     }
 
@@ -230,6 +235,23 @@ class Feedback extends AbstractEntity
     public function setAnnotatedScreenshot(?FileReference $annotatedScreenshot): void
     {
         $this->annotatedScreenshot = $annotatedScreenshot;
+    }
+
+    /** @return ObjectStorage<FileReference> */
+    public function getAttachments(): ObjectStorage
+    {
+        return $this->attachments;
+    }
+
+    /** @param ObjectStorage<FileReference> $attachments */
+    public function setAttachments(ObjectStorage $attachments): void
+    {
+        $this->attachments = $attachments;
+    }
+
+    public function addAttachment(FileReference $attachment): void
+    {
+        $this->attachments->attach($attachment);
     }
 
     public function getBackendUser(): int

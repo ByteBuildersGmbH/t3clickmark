@@ -17,7 +17,12 @@
 
         <!-- Header -->
         <div class="t3cm-detail-header">
-            <h1 class="t3cm-detail-title">{feedback.title}</h1>
+            <h1 class="t3cm-detail-title">
+                {feedback.title}
+                <f:link.action action="edit" arguments="{feedback: feedback.uid}" class="btn btn-sm btn-default t3cm-btn-edit" title="Edit this feedback">
+                    &#9998; Edit
+                </f:link.action>
+            </h1>
             <div class="t3cm-badge-group">
                 <f:switch expression="{feedback.status}">
                     <f:case value="open"><span class="t3cm-badge t3cm-badge-open">Open</span></f:case>
@@ -67,6 +72,34 @@
                         <div class="t3cm-card-body">
                             <div class="t3cm-description">
                                 <f:format.nl2br>{feedback.description}</f:format.nl2br>
+                            </div>
+                        </div>
+                    </div>
+                </f:if>
+
+                <!-- Attachments -->
+                <f:if condition="{attachmentFiles}">
+                    <div class="t3cm-card">
+                        <div class="t3cm-card-header">Attachments ({attachmentFiles -> f:count()})</div>
+                        <div class="t3cm-card-body">
+                            <div class="t3cm-attachments-grid">
+                                <f:for each="{attachmentFiles}" as="file">
+                                    <div class="t3cm-attachment-item">
+                                        <f:if condition="{file.extension} == 'pdf'">
+                                            <f:then>
+                                                <a href="{file.publicUrl}" target="_blank" class="t3cm-attachment-pdf">
+                                                    <span class="t3cm-attachment-pdf-icon">&#128196;</span>
+                                                    <span class="t3cm-attachment-name">{file.name}</span>
+                                                </a>
+                                            </f:then>
+                                            <f:else>
+                                                <a href="#" class="t3cm-screenshot-link" data-t3cm-lightbox="{f:uri.image(image: file)}">
+                                                    <f:image image="{file}" maxWidth="160" class="t3cm-attachment-thumb" />
+                                                </a>
+                                            </f:else>
+                                        </f:if>
+                                    </div>
+                                </f:for>
                             </div>
                         </div>
                     </div>

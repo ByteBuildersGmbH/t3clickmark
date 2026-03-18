@@ -37,6 +37,17 @@ $GLOBALS['TYPO3_CONF_VARS']['FE']['cacheHash']['excludedParameters'][] = 't';
 $GLOBALS['TYPO3_CONF_VARS']['FE']['eID_include']['t3clickmark_feedback']
     = \ByteBuilders\T3ClickMark\Controller\FeedbackApiController::class . '::submitAction';
 
+// Allow feedback records on standard pages (needed for DocHeader button creating records on page context)
+// allowTableOnStandardPages was removed in v13 — use direct PAGES_TYPES config instead
+$GLOBALS['PAGES_TYPES']['default']['allowedTables'] ??= '';
+if (!str_contains($GLOBALS['PAGES_TYPES']['default']['allowedTables'], 'tx_t3clickmark_domain_model_feedback')) {
+    $GLOBALS['PAGES_TYPES']['default']['allowedTables'] .= ',tx_t3clickmark_domain_model_feedback';
+}
+
+// DataHandler hook: forward BE-created feedback to AgencyDesk
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['t3clickmark']
+    = \ByteBuilders\T3ClickMark\Hook\DataHandlerHook::class;
+
 // Register icons
 $iconRegistry = GeneralUtility::makeInstance(IconRegistry::class);
 $iconRegistry->registerIcon(

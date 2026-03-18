@@ -6,10 +6,9 @@ namespace ByteBuilders\T3ClickMark\Controller;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
+use ByteBuilders\T3ClickMark\Service\AgencyDeskForwardingService;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\JsonResponse;
-use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -84,6 +83,7 @@ class FeedbackApiController
             'backend_user' => $backendUserId,
             'backend_username' => $parsedBody['backendUsername'] ?? '',
             'annotated_screenshot' => 0,
+            'attachments' => 0,
         ];
 
         $connection->insert('tx_t3clickmark_domain_model_feedback', $record);
@@ -94,17 +94,46 @@ class FeedbackApiController
             $this->storeScreenshot($feedbackUid, $uploadedFiles['annotatedScreenshot'], 'annotated_screenshot');
         }
 
-        // Forward to AgencyDesk API if configured
-        $agencyDeskResult = null;
-        if ($screenshotTempPath !== null) {
-            $agencyDeskResult = $this->forwardToAgencyDesk($parsedBody, $screenshotTempPath);
-            // Clean up temp file
-            if (file_exists($screenshotTempPath)) {
-                unlink($screenshotTempPath);
+        // Handle attachment uploads (images, PDFs — max 5 files, 5 MB each)
+        $attachments = $uploadedFiles['attachments'] ?? [];
+        $attachmentCount = 0;
+        $attachmentTempPaths = [];
+        foreach ($attachments as $attachment) {
+            if ($attachmentCount >= 5) {
+                break;
             }
-        } else {
-            // No screenshot but still try forwarding
-            $agencyDeskResult = $this->forwardToAgencyDesk($parsedBody, null);
+            if ($attachment->getSize() <= 0 || $attachment->getSize() > 5 * 1024 * 1024) {
+                continue;
+            }
+            // Validate file extension
+            $clientFilename = $attachment->getClientFilename() ?? '';
+            $ext = strtolower(pathinfo($clientFilename, PATHINFO_EXTENSION));
+            if (!in_array($ext, ['png', 'jpg', 'jpeg', 'webp', 'gif', 'pdf'], true)) {
+                continue;
+            }
+            // Save temp copy for AgencyDesk forwarding before FAL consumes the stream
+            $tempPath = GeneralUtility::tempnam('t3cm_att_') . '.' . $ext;
+            $stream = $attachment->getStream();
+            $stream->rewind();
+            file_put_contents($tempPath, $stream->getContents());
+            $attachmentTempPaths[] = ['path' => $tempPath, 'name' => $clientFilename, 'ext' => $ext];
+
+            $this->storeFile($feedbackUid, $attachment, 'attachments', $attachmentCount + 1);
+            $attachmentCount++;
+        }
+
+        // Forward to AgencyDesk API if configured
+        $forwardingService = GeneralUtility::makeInstance(AgencyDeskForwardingService::class);
+        $agencyDeskResult = $forwardingService->forwardFromParsedBody($parsedBody, $screenshotTempPath, $attachmentTempPaths);
+
+        // Clean up temp files
+        if ($screenshotTempPath !== null && file_exists($screenshotTempPath)) {
+            unlink($screenshotTempPath);
+        }
+        foreach ($attachmentTempPaths as $att) {
+            if (file_exists($att['path'])) {
+                unlink($att['path']);
+            }
         }
 
         $response = [
@@ -141,6 +170,74 @@ class FeedbackApiController
         // Also accept yesterday's token (handles midnight boundary)
         $expectedYesterday = hash_hmac('sha256', $backendUserId . '|' . date('Y-m-d', strtotime('-1 day')), $encryptionKey);
         return hash_equals($expectedYesterday, $token);
+    }
+
+    /**
+     * Store an uploaded file via FAL and link it to the feedback record (generalized).
+     */
+    private function storeFile(int $feedbackUid, $uploadedFile, string $fieldName, int $sortingForeign = 1): void
+    {
+        $resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
+        $storage = $resourceFactory->getDefaultStorage();
+        if ($storage === null) {
+            return;
+        }
+
+        $targetFolderPath = 'user_upload/t3clickmark/';
+        if (!$storage->hasFolder($targetFolderPath)) {
+            $storage->createFolder('t3clickmark', $storage->getFolder('user_upload'));
+        }
+        $targetFolder = $storage->getFolder($targetFolderPath);
+
+        $clientFilename = $uploadedFile->getClientFilename() ?? 'upload.bin';
+        $ext = strtolower(pathinfo($clientFilename, PATHINFO_EXTENSION)) ?: 'bin';
+        $filename = sprintf('feedback_%d_%s_%s.%s', $feedbackUid, $fieldName, uniqid(), $ext);
+
+        $tempFile = GeneralUtility::tempnam('t3cm_') . '.' . $ext;
+        $uploadedFile->moveTo($tempFile);
+
+        if (!file_exists($tempFile) || filesize($tempFile) === 0) {
+            return;
+        }
+
+        $file = $storage->addFile($tempFile, $targetFolder, $filename);
+
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('sys_file_reference');
+
+        $connection->insert('sys_file_reference', [
+            'pid' => $this->getStoragePid(),
+            'tstamp' => time(),
+            'crdate' => time(),
+            'uid_local' => $file->getUid(),
+            'uid_foreign' => $feedbackUid,
+            'tablenames' => 'tx_t3clickmark_domain_model_feedback',
+            'fieldname' => $fieldName,
+            'sorting_foreign' => $sortingForeign,
+        ]);
+
+        // Update the file count on the feedback record
+        $feedbackConnection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_t3clickmark_domain_model_feedback');
+
+        // Count total references for this field
+        $countQb = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('sys_file_reference');
+        $count = (int)$countQb->count('uid')
+            ->from('sys_file_reference')
+            ->where(
+                $countQb->expr()->eq('uid_foreign', $countQb->createNamedParameter($feedbackUid, \Doctrine\DBAL\ParameterType::INTEGER)),
+                $countQb->expr()->eq('tablenames', $countQb->createNamedParameter('tx_t3clickmark_domain_model_feedback')),
+                $countQb->expr()->eq('fieldname', $countQb->createNamedParameter($fieldName))
+            )
+            ->executeQuery()
+            ->fetchOne();
+
+        $feedbackConnection->update(
+            'tx_t3clickmark_domain_model_feedback',
+            [$fieldName => $count],
+            ['uid' => $feedbackUid]
+        );
     }
 
     /**
@@ -230,98 +327,6 @@ class FeedbackApiController
         }
 
         return $viewport;
-    }
-
-    /**
-     * Forward the feedback to AgencyDesk API (server-to-server).
-     * Returns null if not configured, or an array with the forwarding result.
-     */
-    private function forwardToAgencyDesk(array $parsedBody, ?string $screenshotPath): ?array
-    {
-        try {
-            $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class);
-            $apiKey = trim((string)$extConf->get('t3clickmark', 'apiKey'));
-        } catch (\Exception $e) {
-            return null;
-        }
-
-        if ($apiKey === '') {
-            return null;
-        }
-
-        $apiEndpoint = self::API_ENDPOINT;
-
-        // Build multipart form data for the AgencyDesk API
-        $boundary = 'T3ClickMark' . uniqid();
-        $body = '';
-
-        // All text fields the AgencyDesk API expects
-        $fields = [
-            'title' => $parsedBody['title'] ?? '',
-            'description' => $parsedBody['description'] ?? '',
-            'priority' => $parsedBody['priority'] ?? 'medium',
-            'category' => $parsedBody['category'] ?? 'change_request',
-            'contentElementUid' => $parsedBody['contentElementUid'] ?? '',
-            'pageId' => $parsedBody['pageId'] ?? '',
-            'contentType' => $parsedBody['contentType'] ?? '',
-            'backendEditLink' => $parsedBody['backendEditLink'] ?? '',
-            'pageUrl' => $parsedBody['pageUrl'] ?? '',
-            'browser' => $parsedBody['browser'] ?? '',
-            'os' => $parsedBody['os'] ?? '',
-            'viewport' => $parsedBody['viewport'] ?? '',
-            'cssSelector' => $parsedBody['cssSelector'] ?? '',
-            'consoleErrors' => (string)($parsedBody['consoleErrors'] ?? '0'),
-            'consoleWarnings' => (string)($parsedBody['consoleWarnings'] ?? '0'),
-            'failedRequests' => (string)($parsedBody['failedRequests'] ?? '0'),
-            'backendUsername' => $parsedBody['backendUsername'] ?? '',
-            'backendUserId' => (string)($parsedBody['backendUserId'] ?? '0'),
-        ];
-
-        foreach ($fields as $name => $value) {
-            $body .= '--' . $boundary . "\r\n";
-            $body .= 'Content-Disposition: form-data; name="' . $name . '"' . "\r\n\r\n";
-            $body .= $value . "\r\n";
-        }
-
-        // Attach screenshot file if available
-        if ($screenshotPath !== null && file_exists($screenshotPath)) {
-            $fileContent = file_get_contents($screenshotPath);
-            $body .= '--' . $boundary . "\r\n";
-            $body .= 'Content-Disposition: form-data; name="annotatedScreenshot"; filename="annotated.jpg"' . "\r\n";
-            $body .= 'Content-Type: image/jpeg' . "\r\n\r\n";
-            $body .= $fileContent . "\r\n";
-        }
-
-        $body .= '--' . $boundary . "--\r\n";
-
-        try {
-            $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
-            $response = $requestFactory->request(
-                rtrim($apiEndpoint, '/') . '/feedback',
-                'POST',
-                [
-                    'headers' => [
-                        'X-API-Key' => $apiKey,
-                        'Content-Type' => 'multipart/form-data; boundary=' . $boundary,
-                    ],
-                    'body' => $body,
-                ]
-            );
-
-            $statusCode = $response->getStatusCode();
-            $responseBody = json_decode((string)$response->getBody(), true) ?? [];
-
-            return [
-                'forwarded' => $statusCode >= 200 && $statusCode < 300,
-                'statusCode' => $statusCode,
-                'response' => $responseBody,
-            ];
-        } catch (\Exception $e) {
-            return [
-                'forwarded' => false,
-                'error' => $e->getMessage(),
-            ];
-        }
     }
 
     /**

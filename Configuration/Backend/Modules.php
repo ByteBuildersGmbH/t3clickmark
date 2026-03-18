@@ -16,6 +16,10 @@ return [
             FeedbackController::class => [
                 'list',
                 'show',
+                'create',
+                'store',
+                'edit',
+                'update',
                 'updateStatus',
                 'addComment',
             ],

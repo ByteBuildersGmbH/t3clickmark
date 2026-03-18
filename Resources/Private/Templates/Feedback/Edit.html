@@ -1,0 +1,177 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<f:layout name="Module" />
+
+<f:section name="Content">
+
+    <div class="t3cm-detail">
+
+        <!-- Back link -->
+        <div class="t3cm-back-link">
+            <f:link.action action="show" arguments="{feedback: feedback.uid}" class="btn btn-sm btn-default t3cm-btn-back">
+                &#8592; Back to detail
+            </f:link.action>
+        </div>
+
+        <!-- Header -->
+        <div class="t3cm-detail-header">
+            <h1 class="t3cm-detail-title">Edit Feedback #{feedback.uid}</h1>
+        </div>
+
+        <form method="post" action="{f:uri.action(action: 'update', arguments: '{feedback: feedback.uid}')}" enctype="multipart/form-data">
+
+            <div class="row t3cm-detail-row">
+                <!-- Left column: Editable fields -->
+                <div class="col-md-7">
+                    <div class="t3cm-card">
+                        <div class="t3cm-card-header">Feedback Details</div>
+                        <div class="t3cm-card-body">
+                            <div class="t3cm-form-stack">
+                                <div class="t3cm-form-group">
+                                    <label class="t3cm-manage-label" for="t3cm-title">Title *</label>
+                                    <input type="text" id="t3cm-title" name="title" class="form-control" required
+                                           value="{feedback.title}" />
+                                </div>
+                                <div class="t3cm-form-group">
+                                    <label class="t3cm-manage-label" for="t3cm-description">Description</label>
+                                    <textarea id="t3cm-description" name="description" class="form-control" rows="4">{feedback.description}</textarea>
+                                </div>
+                                <div class="t3cm-form-row">
+                                    <div class="t3cm-form-group">
+                                        <label class="t3cm-manage-label" for="t3cm-category">Category</label>
+                                        <select id="t3cm-category" name="category" class="form-select form-select-sm">
+                                            <f:for each="{categoryOptions}" as="label" key="value">
+                                                <option value="{value}"{f:if(condition: '{value} == feedback.category', then: ' selected')}>{label}</option>
+                                            </f:for>
+                                        </select>
+                                    </div>
+                                    <div class="t3cm-form-group">
+                                        <label class="t3cm-manage-label" for="t3cm-priority">Priority</label>
+                                        <select id="t3cm-priority" name="priority" class="form-select form-select-sm">
+                                            <f:for each="{priorityOptions}" as="label" key="value">
+                                                <option value="{value}"{f:if(condition: '{value} == feedback.priority', then: ' selected')}>{label}</option>
+                                            </f:for>
+                                        </select>
+                                    </div>
+                                    <div class="t3cm-form-group">
+                                        <label class="t3cm-manage-label" for="t3cm-status">Status</label>
+                                        <select id="t3cm-status" name="status" class="form-select form-select-sm">
+                                            <f:for each="{statusOptions}" as="label" key="value">
+                                                <option value="{value}"{f:if(condition: '{value} == feedback.status', then: ' selected')}>{label}</option>
+                                            </f:for>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="t3cm-form-group">
+                                    <label class="t3cm-manage-label" for="t3cm-pageUrl">Page URL</label>
+                                    <input type="url" id="t3cm-pageUrl" name="pageUrl" class="form-control form-control-sm"
+                                           value="{feedback.pageUrl}" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Existing Attachments -->
+                    <f:if condition="{attachmentFiles}">
+                        <div class="t3cm-card">
+                            <div class="t3cm-card-header">Current Attachments</div>
+                            <div class="t3cm-card-body">
+                                <div class="t3cm-attachments-grid">
+                                    <f:for each="{attachmentFiles}" as="file">
+                                        <div class="t3cm-attachment-item">
+                                            <f:if condition="{file.extension} == 'pdf'">
+                                                <f:then>
+                                                    <a href="{file.publicUrl}" target="_blank" class="t3cm-attachment-pdf">
+                                                        <span class="t3cm-attachment-pdf-icon">&#128196;</span>
+                                                        <span class="t3cm-attachment-name">{file.name}</span>
+                                                    </a>
+                                                </f:then>
+                                                <f:else>
+                                                    <a href="#" class="t3cm-screenshot-link" data-t3cm-lightbox="{f:uri.image(image: file)}">
+                                                        <f:image image="{file}" maxWidth="120" class="t3cm-attachment-thumb" />
+                                                    </a>
+                                                </f:else>
+                                            </f:if>
+                                        </div>
+                                    </f:for>
+                                </div>
+                            </div>
+                        </div>
+                    </f:if>
+
+                    <!-- Add Attachments -->
+                    <div class="t3cm-card">
+                        <div class="t3cm-card-header">Add Attachments</div>
+                        <div class="t3cm-card-body">
+                            <div class="t3cm-form-group">
+                                <input type="file" name="attachments[]" class="form-control form-control-sm"
+                                       accept="image/*,.pdf" multiple />
+                                <small class="t3cm-form-hint">PNG, JPG, WebP, GIF, PDF (max 5 total, 5 MB each)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right column: Read-only context + submit -->
+                <div class="col-md-5">
+                    <f:if condition="{feedback.contentUid} || {feedback.pageUid}">
+                        <div class="t3cm-card">
+                            <div class="t3cm-card-header">TYPO3 Context</div>
+                            <table class="t3cm-meta-table">
+                                <f:if condition="{feedback.contentUid}">
+                                    <tr>
+                                        <th>Content Element</th>
+                                        <td>#{feedback.contentUid} <span class="t3cm-meta-secondary">({feedback.contentType})</span></td>
+                                    </tr>
+                                </f:if>
+                                <f:if condition="{feedback.pageUid}">
+                                    <tr>
+                                        <th>Page</th>
+                                        <td>#{feedback.pageUid}</td>
+                                    </tr>
+                                </f:if>
+                                <f:if condition="{feedback.backendEditLink}">
+                                    <tr>
+                                        <th>Action</th>
+                                        <td>
+                                            <a href="{feedback.backendEditLink}" target="_blank" class="btn btn-sm btn-primary t3cm-btn-action">
+                                                Edit in Backend
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </f:if>
+                            </table>
+                        </div>
+                    </f:if>
+
+                    <div class="t3cm-card">
+                        <div class="t3cm-card-header">Info</div>
+                        <table class="t3cm-meta-table">
+                            <tr>
+                                <th>Reporter</th>
+                                <td>{feedback.backendUsername}</td>
+                            </tr>
+                            <tr>
+                                <th>Created</th>
+                                <td><f:format.date format="d.m.Y H:i">{feedback.crdate}</f:format.date></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="t3cm-card">
+                        <div class="t3cm-card-body t3cm-form-submit-card">
+                            <button type="submit" class="btn btn-primary t3cm-manage-submit">
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+</f:section>
+
+</html>

@@ -1,0 +1,135 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<f:layout name="Module" />
+
+<f:section name="Content">
+
+    <div class="t3cm-detail">
+
+        <!-- Back link -->
+        <div class="t3cm-back-link">
+            <f:link.action action="list" class="btn btn-sm btn-default t3cm-btn-back">
+                &#8592; Back to list
+            </f:link.action>
+        </div>
+
+        <!-- Header -->
+        <div class="t3cm-detail-header">
+            <h1 class="t3cm-detail-title">New Feedback</h1>
+            <f:if condition="{hasElementContext}">
+                <div class="t3cm-badge-group">
+                    <span class="t3cm-badge t3cm-badge-in-progress">From Content Element #{contentUid}</span>
+                </div>
+            </f:if>
+        </div>
+
+        <form method="post" action="{f:uri.action(action: 'store')}" enctype="multipart/form-data">
+
+            <div class="row t3cm-detail-row">
+                <!-- Left column: Main form -->
+                <div class="col-md-7">
+                    <div class="t3cm-card">
+                        <div class="t3cm-card-header">Feedback Details</div>
+                        <div class="t3cm-card-body">
+                            <div class="t3cm-form-stack">
+                                <div class="t3cm-form-group">
+                                    <label class="t3cm-manage-label" for="t3cm-title">Title *</label>
+                                    <input type="text" id="t3cm-title" name="title" class="form-control" required
+                                           placeholder="Brief description of the issue or request" />
+                                </div>
+                                <div class="t3cm-form-group">
+                                    <label class="t3cm-manage-label" for="t3cm-description">Description</label>
+                                    <textarea id="t3cm-description" name="description" class="form-control" rows="4"
+                                              placeholder="Detailed description, context, or instructions..."></textarea>
+                                </div>
+                                <div class="t3cm-form-row">
+                                    <div class="t3cm-form-group">
+                                        <label class="t3cm-manage-label" for="t3cm-category">Category</label>
+                                        <select id="t3cm-category" name="category" class="form-select form-select-sm">
+                                            <f:for each="{categoryOptions}" as="label" key="value">
+                                                <option value="{value}">{label}</option>
+                                            </f:for>
+                                        </select>
+                                    </div>
+                                    <div class="t3cm-form-group">
+                                        <label class="t3cm-manage-label" for="t3cm-priority">Priority</label>
+                                        <select id="t3cm-priority" name="priority" class="form-select form-select-sm">
+                                            <f:for each="{priorityOptions}" as="label" key="value">
+                                                <option value="{value}"{f:if(condition: '{value} == \'medium\'', then: ' selected')}>{label}</option>
+                                            </f:for>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="t3cm-form-group">
+                                    <label class="t3cm-manage-label" for="t3cm-pageUrl">Page URL (optional)</label>
+                                    <input type="url" id="t3cm-pageUrl" name="pageUrl" class="form-control form-control-sm"
+                                           placeholder="https://example.com/page" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attachments -->
+                    <div class="t3cm-card">
+                        <div class="t3cm-card-header">Attachments</div>
+                        <div class="t3cm-card-body">
+                            <div class="t3cm-form-stack">
+                                <div class="t3cm-form-group">
+                                    <label class="t3cm-manage-label" for="t3cm-attachments">Reference files (optional, max 5, 5 MB each)</label>
+                                    <input type="file" id="t3cm-attachments" name="attachments[]" class="form-control form-control-sm"
+                                           accept="image/*,.pdf" multiple />
+                                    <small class="t3cm-form-hint">PNG, JPG, WebP, GIF, PDF</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right column: Context info (DocHeader) or Submit -->
+                <div class="col-md-5">
+                    <f:if condition="{hasElementContext}">
+                        <div class="t3cm-card">
+                            <div class="t3cm-card-header">Content Element</div>
+                            <table class="t3cm-meta-table">
+                                <tr>
+                                    <th>Element</th>
+                                    <td>#{contentUid} <span class="t3cm-meta-secondary">({contentType})</span></td>
+                                </tr>
+                                <tr>
+                                    <th>Page</th>
+                                    <td>#{pageUid}</td>
+                                </tr>
+                                <f:if condition="{backendEditLink}">
+                                    <tr>
+                                        <th>Action</th>
+                                        <td><a href="{backendEditLink}" target="_blank" class="t3cm-link">Open in Backend</a></td>
+                                    </tr>
+                                </f:if>
+                            </table>
+                            <input type="hidden" name="contentUid" value="{contentUid}" />
+                            <input type="hidden" name="pageUid" value="{pageUid}" />
+                            <input type="hidden" name="contentType" value="{contentType}" />
+                            <input type="hidden" name="backendEditLink" value="{backendEditLink}" />
+                        </div>
+                    </f:if>
+
+                    <div class="t3cm-card">
+                        <div class="t3cm-card-body t3cm-form-submit-card">
+                            <button type="submit" class="btn btn-primary t3cm-manage-submit">
+                                Create Feedback
+                            </button>
+                            <p class="t3cm-form-hint" style="margin-top: 8px;">
+                                Ticket will be created with status <strong>Open</strong>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+</f:section>
+
+</html>

@@ -10,3 +10,9 @@ services:
   ByteBuilders\T3ClickMark\ContextMenu\ClickMarkItemProvider:
     tags:
       - name: backend.contextmenu.itemprovider
+
+  ByteBuilders\T3ClickMark\EventListener\DocHeaderFeedbackButton:
+    tags:
+      - name: event.listener
+        identifier: 't3clickmark/docheader-feedback-button'
+        event: TYPO3\CMS\Backend\Template\Components\ModifyButtonBarEvent
