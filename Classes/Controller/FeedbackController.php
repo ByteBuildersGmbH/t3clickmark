@@ -8,6 +8,7 @@ use ByteBuilders\T3ClickMark\Domain\Model\Feedback;
 use ByteBuilders\T3ClickMark\Domain\Model\FeedbackComment;
 use ByteBuilders\T3ClickMark\Domain\Repository\FeedbackRepository;
 use ByteBuilders\T3ClickMark\Service\AgencyDeskForwardingService;
+use ByteBuilders\T3ClickMark\Service\AgencyDeskSyncService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use TYPO3\CMS\Backend\Attribute\AsController;
@@ -32,6 +33,13 @@ class FeedbackController extends ActionController
         string $status = '',
         string $priority = ''
     ): ResponseInterface {
+        // Sync statuses from AgencyDesk (rate-limited to once per minute)
+        try {
+            GeneralUtility::makeInstance(AgencyDeskSyncService::class)->syncFromAgencyDesk();
+        } catch (\Throwable $e) {
+            // Don't break module if sync fails
+        }
+
         $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
         $feedbacks = $this->feedbackRepository->findFiltered($status, $priority);

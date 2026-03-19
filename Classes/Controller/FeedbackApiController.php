@@ -126,6 +126,15 @@ class FeedbackApiController
         $forwardingService = GeneralUtility::makeInstance(AgencyDeskForwardingService::class);
         $agencyDeskResult = $forwardingService->forwardFromParsedBody($parsedBody, $screenshotTempPath, $attachmentTempPaths);
 
+        // Store AgencyDesk feedback ID for sync-back matching
+        if (isset($agencyDeskResult['forwarded']) && $agencyDeskResult['forwarded'] && isset($agencyDeskResult['response']['id'])) {
+            $connection->update(
+                'tx_t3clickmark_domain_model_feedback',
+                ['external_id' => (string)$agencyDeskResult['response']['id']],
+                ['uid' => $feedbackUid]
+            );
+        }
+
         // Clean up temp files
         if ($screenshotTempPath !== null && file_exists($screenshotTempPath)) {
             unlink($screenshotTempPath);

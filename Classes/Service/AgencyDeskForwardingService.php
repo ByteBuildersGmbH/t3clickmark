@@ -67,7 +67,18 @@ class AgencyDeskForwardingService
             [$fields['browser'], $fields['os']] = explode(' on ', $browserInfo, 2);
         }
 
-        return $this->sendToApi($apiKey, $fields);
+        $result = $this->sendToApi($apiKey, $fields);
+
+        // Store the AgencyDesk feedback ID for sync-back matching
+        if (isset($result['forwarded']) && $result['forwarded'] && isset($result['response']['id'])) {
+            $connection->update(
+                'tx_t3clickmark_domain_model_feedback',
+                ['external_id' => (string)$result['response']['id']],
+                ['uid' => $feedbackUid]
+            );
+        }
+
+        return $result;
     }
 
     /**
