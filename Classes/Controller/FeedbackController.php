@@ -245,6 +245,14 @@ class FeedbackController extends ActionController
                 $feedbackObj->setPriority($priority);
             }
             $this->feedbackRepository->update($feedbackObj);
+
+            // Forward status change to AgencyDesk → Jira
+            try {
+                GeneralUtility::makeInstance(AgencyDeskForwardingService::class)
+                    ->forwardStatusChange($feedback, $status);
+            } catch (\Throwable $e) {
+                // Don't break the UI
+            }
         }
 
         return $this->redirect('show', null, null, ['feedback' => $feedback]);
@@ -261,6 +269,14 @@ class FeedbackController extends ActionController
             $feedbackObj->addComment($commentObj);
             $this->feedbackRepository->update($feedbackObj);
             $this->persistenceManager->persistAll();
+
+            // Forward comment to AgencyDesk → Jira
+            try {
+                GeneralUtility::makeInstance(AgencyDeskForwardingService::class)
+                    ->forwardComment($feedback, trim($comment), $commentObj->getAuthorName());
+            } catch (\Throwable $e) {
+                // Don't break the UI
+            }
         }
 
         return $this->redirect('show', null, null, ['feedback' => $feedback, 'highlight' => 'latest']);

@@ -62,7 +62,7 @@ class AgencyDeskSyncService
                 return 0;
             }
 
-            $count = $this->applyUpdates($remoteFeedbacks);
+            $count = $this->applyUpdates($apiKey, $remoteFeedbacks);
 
             // Update last sync timestamp
             $registry->set(self::REGISTRY_NAMESPACE, self::REGISTRY_KEY, time());
@@ -74,7 +74,7 @@ class AgencyDeskSyncService
         }
     }
 
-    private function applyUpdates(array $remoteFeedbacks): int
+    private function applyUpdates(string $apiKey, array $remoteFeedbacks): int
     {
         $connection = GeneralUtility::makeInstance(ConnectionPool::class)
             ->getConnectionForTable('tx_t3clickmark_domain_model_feedback');
@@ -90,7 +90,6 @@ class AgencyDeskSyncService
             }
 
             // Find local record by external_id (AgencyDesk feedback ID)
-            // The external_id is stored when the record is first forwarded
             $localRow = $connection->select(
                 ['uid', 'status', 'external_id'],
                 'tx_t3clickmark_domain_model_feedback',
@@ -114,9 +113,98 @@ class AgencyDeskSyncService
                 );
                 $count++;
             }
+
+            // Sync comments from AgencyDesk
+            $this->syncComments($apiKey, $remoteId, (int)$localRow['uid']);
         }
 
         return $count;
+    }
+
+    /**
+     * Pull comments from AgencyDesk and insert any new ones into the local TYPO3 table.
+     */
+    private function syncComments(string $apiKey, int $agencyDeskFeedbackId, int $localFeedbackUid): void
+    {
+        try {
+            $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
+            $response = $requestFactory->request(
+                rtrim(self::API_ENDPOINT, '/') . '/feedback/' . $agencyDeskFeedbackId . '/comments',
+                'GET',
+                ['headers' => ['X-API-Key' => $apiKey]]
+            );
+
+            if ($response->getStatusCode() !== 200) {
+                return;
+            }
+
+            $remoteComments = json_decode((string)$response->getBody(), true);
+            if (!is_array($remoteComments)) {
+                return;
+            }
+
+            $commentConnection = GeneralUtility::makeInstance(ConnectionPool::class)
+                ->getConnectionForTable('tx_t3clickmark_domain_model_feedbackcomment');
+
+            foreach ($remoteComments as $remote) {
+                $remoteSource = $remote['source'] ?? '';
+                // Only sync comments NOT from typo3 (those were created locally)
+                if ($remoteSource === 'typo3') {
+                    continue;
+                }
+
+                // Dedup: check if we already have this comment (by external_id or matching text+author+timestamp)
+                $commentText = $remote['comment'] ?? '';
+                $authorName = $remote['author_name'] ?? 'Unknown';
+                $externalId = 'ad_' . ($remote['id'] ?? '0'); // prefix to avoid collision with Jira external_ids
+
+                // Check if already synced
+                $existing = $commentConnection->select(
+                    ['uid'],
+                    'tx_t3clickmark_domain_model_feedbackcomment',
+                    ['feedback' => $localFeedbackUid]
+                )->fetchAllAssociative();
+
+                // Simple dedup: check if exact comment text + author already exists
+                $isDuplicate = false;
+                foreach ($existing as $ex) {
+                    $existingRow = $commentConnection->select(
+                        ['comment', 'author_name'],
+                        'tx_t3clickmark_domain_model_feedbackcomment',
+                        ['uid' => (int)$ex['uid']]
+                    )->fetchAssociative();
+                    if ($existingRow && $existingRow['comment'] === $commentText && $existingRow['author_name'] === $authorName) {
+                        $isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if ($isDuplicate) {
+                    continue;
+                }
+
+                // Insert new comment
+                $commentConnection->insert('tx_t3clickmark_domain_model_feedbackcomment', [
+                    'pid' => 0,
+                    'feedback' => $localFeedbackUid,
+                    'comment' => $commentText,
+                    'author_name' => $authorName,
+                    'author_type' => $remote['author_type'] ?? 'agency',
+                    'crdate' => time(),
+                    'tstamp' => time(),
+                ]);
+
+                // Update comment count on feedback record
+                $feedbackConnection = GeneralUtility::makeInstance(ConnectionPool::class)
+                    ->getConnectionForTable('tx_t3clickmark_domain_model_feedback');
+                $feedbackConnection->executeStatement(
+                    'UPDATE tx_t3clickmark_domain_model_feedback SET comments = comments + 1 WHERE uid = ?',
+                    [$localFeedbackUid]
+                );
+            }
+        } catch (\Throwable $e) {
+            // Don't break sync if comment fetch fails
+        }
     }
 
     private function getApiKey(): ?string

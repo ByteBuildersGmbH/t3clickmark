@@ -116,6 +116,85 @@ class AgencyDeskForwardingService
         return $this->sendToApi($apiKey, $fields, $screenshotPath, $attachmentPaths);
     }
 
+    /**
+     * Forward a comment to AgencyDesk.
+     */
+    public function forwardComment(int $feedbackUid, string $comment, string $authorName): void
+    {
+        $apiKey = $this->getApiKey();
+        if ($apiKey === null) {
+            return;
+        }
+
+        // Look up the AgencyDesk feedback ID (external_id)
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_t3clickmark_domain_model_feedback');
+        $row = $connection->select(['external_id'], 'tx_t3clickmark_domain_model_feedback', ['uid' => $feedbackUid])->fetchAssociative();
+
+        $externalId = $row['external_id'] ?? '';
+        if ($externalId === '') {
+            return;
+        }
+
+        try {
+            $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
+            $requestFactory->request(
+                rtrim(self::API_ENDPOINT, '/') . '/feedback/' . $externalId . '/comments',
+                'POST',
+                [
+                    'headers' => [
+                        'X-API-Key' => $apiKey,
+                        'Content-Type' => 'application/json',
+                    ],
+                    'body' => json_encode([
+                        'comment' => $comment,
+                        'author_name' => $authorName,
+                        'source' => 'typo3',
+                    ]),
+                ]
+            );
+        } catch (\Throwable $e) {
+            // Don't break the comment flow if forwarding fails
+        }
+    }
+
+    /**
+     * Forward a status change to AgencyDesk.
+     */
+    public function forwardStatusChange(int $feedbackUid, string $status): void
+    {
+        $apiKey = $this->getApiKey();
+        if ($apiKey === null) {
+            return;
+        }
+
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_t3clickmark_domain_model_feedback');
+        $row = $connection->select(['external_id'], 'tx_t3clickmark_domain_model_feedback', ['uid' => $feedbackUid])->fetchAssociative();
+
+        $externalId = $row['external_id'] ?? '';
+        if ($externalId === '') {
+            return;
+        }
+
+        try {
+            $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
+            $requestFactory->request(
+                rtrim(self::API_ENDPOINT, '/') . '/feedback/' . $externalId . '/status',
+                'PATCH',
+                [
+                    'headers' => [
+                        'X-API-Key' => $apiKey,
+                        'Content-Type' => 'application/json',
+                    ],
+                    'body' => json_encode(['status' => $status]),
+                ]
+            );
+        } catch (\Throwable $e) {
+            // Don't break the status flow if forwarding fails
+        }
+    }
+
     private function getApiKey(): ?string
     {
         try {
