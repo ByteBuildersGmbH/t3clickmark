@@ -6,6 +6,7 @@ namespace ByteBuilders\T3ClickMark\ContextMenu;
 
 use ByteBuilders\T3ClickMark\Service\CrossDomainTokenService;
 use TYPO3\CMS\Backend\ContextMenu\ItemProviders\AbstractProvider;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -42,8 +43,8 @@ class ClickMarkItemProvider extends AbstractProvider
 
     public function addItems(array $items): array
     {
-        // Only show for users with module access
-        if (!$GLOBALS['BE_USER']->check('modules', 't3clickmark')) {
+        // Only show for users with ClickMark access
+        if (!$this->hasT3cmAccess($GLOBALS['BE_USER'])) {
             return $items;
         }
 
@@ -112,5 +113,18 @@ class ClickMarkItemProvider extends AbstractProvider
         } catch (\Exception $e) {
             return '/?id=' . $pageUid;
         }
+    }
+
+    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser): bool
+    {
+        $config = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('t3clickmark');
+        $allowedUsers = trim($config['allowedBackendUsers'] ?? '');
+
+        if ($allowedUsers === '') {
+            return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();
+        }
+
+        $allowed = GeneralUtility::trimExplode(',', $allowedUsers, true);
+        return in_array($backendUser->user['username'] ?? '', $allowed, true);
     }
 }

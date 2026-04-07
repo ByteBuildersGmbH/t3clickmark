@@ -7,6 +7,7 @@ namespace ByteBuilders\T3ClickMark\Controller;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ByteBuilders\T3ClickMark\Service\AgencyDeskForwardingService;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
@@ -161,10 +162,19 @@ class FeedbackApiController
     /**
      * Verify the HMAC submission token.
      * Checks both today and yesterday to handle midnight boundary.
+     * In public widget mode, backendUserId = 0 is accepted.
      */
     private function verifySubmissionToken(string $token, int $backendUserId): bool
     {
-        if ($token === '' || $backendUserId <= 0) {
+        if ($token === '') {
+            return false;
+        }
+
+        // In public mode, accept backendUserId = 0
+        $isPublic = !empty(
+            GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('t3clickmark')['publicWidget'] ?? false
+        );
+        if ($backendUserId <= 0 && !$isPublic) {
             return false;
         }
 

@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\RedirectResponse;
@@ -109,19 +110,25 @@ class InjectWidgetMiddleware implements MiddlewareInterface
     }
 
     /**
-     * Resolve the backend user from same-domain BE_USER or cross-domain session cookie.
+     * Resolve the backend user from same-domain BE_USER, cross-domain session cookie,
+     * or public mode (no login required).
      *
      * @return array{uid: int, username: string}|null
      */
     private function resolveBackendUser(ServerRequestInterface $request): ?array
     {
-        // Same-domain: authenticated BE_USER with module access
-        // Check for a real authenticated user (positive UID) to avoid false positives
-        // from TYPO3's default BE_USER object on frontend requests
+        $config = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('t3clickmark');
+
+        // Public mode: inject widget for everyone — no backend user needed
+        if (!empty($config['publicWidget'])) {
+            return ['uid' => 0, 'username' => ''];
+        }
+
+        // Same-domain: authenticated BE_USER with ClickMark access
         $beUserUid = (int)($GLOBALS['BE_USER']->user['uid'] ?? 0);
 
         if ($beUserUid > 0) {
-            if (!$GLOBALS['BE_USER']->check('modules', 't3clickmark')) {
+            if (!$this->hasT3cmAccess($GLOBALS['BE_USER'], $config)) {
                 return null;
             }
             return [
@@ -143,6 +150,18 @@ class InjectWidgetMiddleware implements MiddlewareInterface
         }
 
         return $this->lookupBackendUser($userId);
+    }
+
+    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser, array $config): bool
+    {
+        $allowedUsers = trim($config['allowedBackendUsers'] ?? '');
+
+        if ($allowedUsers === '') {
+            return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();
+        }
+
+        $allowed = GeneralUtility::trimExplode(',', $allowedUsers, true);
+        return in_array($backendUser->user['username'] ?? '', $allowed, true);
     }
 
     /**

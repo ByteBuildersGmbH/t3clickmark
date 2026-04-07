@@ -7,6 +7,7 @@ namespace ByteBuilders\T3ClickMark\EventListener;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\Components\ModifyButtonBarEvent;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
@@ -40,9 +41,9 @@ class DocHeaderFeedbackButton
             return;
         }
 
-        // Only show button if the user has access to the t3clickmark module
+        // Only show button if the user has ClickMark access
         $backendUser = $GLOBALS['BE_USER'] ?? null;
-        if ($backendUser === null || (!$backendUser->isAdmin() && !$backendUser->check('modules', 't3clickmark'))) {
+        if ($backendUser === null || !$this->hasT3cmAccess($backendUser)) {
             return;
         }
 
@@ -142,5 +143,18 @@ class DocHeaderFeedbackButton
             ->setShowLabelText(true);
 
         $event->setButtons($buttons);
+    }
+
+    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser): bool
+    {
+        $config = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('t3clickmark');
+        $allowedUsers = trim($config['allowedBackendUsers'] ?? '');
+
+        if ($allowedUsers === '') {
+            return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();
+        }
+
+        $allowed = GeneralUtility::trimExplode(',', $allowedUsers, true);
+        return in_array($backendUser->user['username'] ?? '', $allowed, true);
     }
 }

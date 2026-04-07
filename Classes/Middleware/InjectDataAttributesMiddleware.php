@@ -9,6 +9,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\Stream;
@@ -88,11 +89,17 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
      */
     private function hasClickMarkAccess(ServerRequestInterface $request): bool
     {
-        // Same-domain: authenticated BE_USER with module access
-        // Check for a real authenticated user (positive UID) to avoid false positives
+        $config = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('t3clickmark');
+
+        // Public mode: always grant access regardless of backend user
+        if (!empty($config['publicWidget'])) {
+            return true;
+        }
+
+        // Same-domain: authenticated BE_USER
         $beUserUid = (int)($GLOBALS['BE_USER']->user['uid'] ?? 0);
         if ($beUserUid > 0) {
-            return $GLOBALS['BE_USER']->check('modules', 't3clickmark');
+            return $this->hasT3cmAccess($GLOBALS['BE_USER'], $config);
         }
 
         // Cross-domain: valid session cookie
@@ -103,6 +110,18 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
         }
 
         return false;
+    }
+
+    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser, array $config): bool
+    {
+        $allowedUsers = trim($config['allowedBackendUsers'] ?? '');
+
+        if ($allowedUsers === '') {
+            return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();
+        }
+
+        $allowed = GeneralUtility::trimExplode(',', $allowedUsers, true);
+        return in_array($backendUser->user['username'] ?? '', $allowed, true);
     }
 
     /**
