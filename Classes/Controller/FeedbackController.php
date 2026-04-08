@@ -9,6 +9,7 @@ use ByteBuilders\T3ClickMark\Domain\Model\FeedbackComment;
 use ByteBuilders\T3ClickMark\Domain\Repository\FeedbackRepository;
 use ByteBuilders\T3ClickMark\Service\AgencyDeskForwardingService;
 use ByteBuilders\T3ClickMark\Service\AgencyDeskSyncService;
+use ByteBuilders\T3ClickMark\Service\ClickMarkConnectionService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use TYPO3\CMS\Backend\Attribute\AsController;
@@ -43,6 +44,12 @@ class FeedbackController extends ActionController
         $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
         $feedbacks = $this->feedbackRepository->findFiltered($status, $priority);
+
+        // Connection state for the ConnectionBanner partial
+        $connectionService = GeneralUtility::makeInstance(ClickMarkConnectionService::class);
+        $isConnected = $connectionService->isConnected();
+        $callbackUrl = GeneralUtility::getIndpEnv('TYPO3_SITE_URL') . '?eID=t3clickmark_oauth_callback';
+
         $moduleTemplate->assignMultiple([
             'feedbacks' => $feedbacks,
             'totalCount' => $feedbacks->count(),
@@ -51,6 +58,9 @@ class FeedbackController extends ActionController
             'currentPriority' => $priority,
             'statusOptions' => ['' => 'All Statuses', 'open' => 'Open', 'in_progress' => 'In Progress', 'resolved' => 'Resolved', 'closed' => 'Closed'],
             'priorityOptions' => ['' => 'All Priorities', 'low' => 'Low', 'medium' => 'Medium', 'high' => 'High'],
+            'isConnected' => $isConnected,
+            'dashboardUrl' => $connectionService->getDashboardUrl(),
+            'callbackUrl' => $callbackUrl,
         ]);
 
         return $moduleTemplate->renderResponse('Feedback/List');

@@ -1,0 +1,43 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<f:if condition="{isConnected}">
+    <f:then>
+        <!-- Connected state: subtle badge with dashboard link -->
+        <div class="t3cm-connection-banner t3cm-connection-banner--connected">
+            <span class="t3cm-connection-status">
+                <svg class="t3cm-connection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Connected to ClickMark
+            </span>
+            <f:if condition="{dashboardUrl}">
+                <a href="{dashboardUrl}" target="_blank" rel="noopener" class="t3cm-connection-link">
+                    Manage in dashboard &rarr;
+                </a>
+            </f:if>
+        </div>
+    </f:then>
+    <f:else>
+        <!-- Not connected state: info banner with connect button -->
+        <div class="t3cm-connection-banner t3cm-connection-banner--disconnected">
+            <div class="t3cm-connection-info">
+                <svg class="t3cm-connection-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="16" x2="12" y2="12"/>
+                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+                <span>Connect to ClickMark to sync feedback to Jira, notify on Slack, and manage projects from the AgencyDesk dashboard.</span>
+            </div>
+            <button type="button"
+                    class="btn btn-sm btn-primary t3cm-btn-connect"
+                    id="t3cm-btn-connect"
+                    data-t3cm-platform-url="https://clickmark.bytebuilders.de"
+                    data-t3cm-callback-url="{callbackUrl}">
+                Connect to ClickMark
+            </button>
+        </div>
+    </f:else>
+</f:if>
+
+</html>
