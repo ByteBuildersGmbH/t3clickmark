@@ -6,6 +6,3 @@ allowedBackendUsers =
 
 # cat=access/user/30; type=boolean; label=Public Widget (no login required):If enabled, the ClickMark widget is injected on all frontend pages regardless of backend user login. Anyone can submit feedback. Leave off for agency/internal use.
 publicWidget = 0
-
-# cat=test; type=boolean; label=Enable test mode API endpoints (local development only — never enable in production)
-testModeEnabled = 0

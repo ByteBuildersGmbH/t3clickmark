@@ -2,6 +2,7 @@
     "name": "bytebuilders/t3clickmark",
     "type": "typo3-cms-extension",
     "description": "Visual website feedback for TYPO3 agencies. Content element recognition, backend edit links, screenshot capture, and annotation tools.",
+    "homepage": "https://clickmark.it",
     "license": "GPL-2.0-or-later",
     "authors": [
         {

@@ -27,17 +27,4 @@ $_middlewares = [
     ],
 ];
 
-// Test middleware — only registered when the class file is present (dev builds)
-if (class_exists(\ByteBuilders\T3ClickMark\Middleware\TestApiMiddleware::class)) {
-    $_middlewares['frontend']['bytebuilders/t3clickmark/test-api'] = [
-        'target' => \ByteBuilders\T3ClickMark\Middleware\TestApiMiddleware::class,
-        'after' => [
-            'typo3/cms-core/normalized-params-attribute',
-        ],
-        'before' => [
-            'typo3/cms-frontend/site',
-        ],
-    ];
-}
-
 return $_middlewares;
