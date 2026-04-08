@@ -1,0 +1,37 @@
+stages:
+  - audit
+  - deploy
+
+# Block push if any AI tool reference is found in tracked files
+audit-ai-references:
+  stage: audit
+  only:
+    - tags
+  script:
+    - |
+      PATTERNS='claude|anthropic|openai|copilot|codex|chatgpt|gpt-[0-9]|o[1-9]-|gemini|bard'
+      PATTERNS="$PATTERNS|codewhisperer|amazon q|tabnine|cursor|windsurf|aider|cody|sourcegraph ai"
+      PATTERNS="$PATTERNS|devin|cognition|replit ai|ghostwriter|phind|codeium|supermaven"
+      PATTERNS="$PATTERNS|mistral|llama|deepseek|qwen|cohere|perplexity"
+      PATTERNS="$PATTERNS|co-authored-by|ai-generated|ai-assisted|ai-written|llm-generated|ai-coded"
+      PATTERNS="$PATTERNS|generated (by|with|using|via).*(ai|llm|model|assistant|bot)"
+      PATTERNS="$PATTERNS|written (by|with).*(ai|llm|bot|assistant|agent)"
+      echo "Scanning all tracked files for AI references..."
+      if git grep -i -E "$PATTERNS" HEAD; then
+        echo ""
+        echo "BLOCKED: AI/tool reference found in tracked files."
+        echo "Fix before pushing to public repo."
+        exit 1
+      fi
+      echo "OK: No AI references found."
+
+# Mirror to GitHub on tag push (only after audit passes)
+mirror-to-github:
+  stage: deploy
+  only:
+    - tags
+  needs:
+    - audit-ai-references
+  script:
+    - git remote add github git@github.com:ByteBuildersGmbH/t3clickmark.git || true
+    - git push github HEAD:main --tags
