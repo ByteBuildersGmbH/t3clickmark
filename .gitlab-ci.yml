@@ -2,22 +2,40 @@ stages:
   - audit
   - deploy
 
-# Block push if any AI tool reference is found in tracked files
+# Block push if any AI tool reference is found in tracked files.
+#
+# Patterns use word boundaries (\b) for short tool names that
+# would otherwise collide with TYPO3 / CSS / minified bundle content.
+# Built artefacts and self-references are excluded from the scan.
 audit-ai-references:
   stage: audit
   only:
     - tags
   script:
     - |
-      PATTERNS='claude|anthropic|openai|copilot|codex|chatgpt|gpt-[0-9]|o[1-9]-|gemini|bard'
-      PATTERNS="$PATTERNS|codewhisperer|amazon q|tabnine|cursor|windsurf|aider|cody|sourcegraph ai"
-      PATTERNS="$PATTERNS|devin|cognition|replit ai|ghostwriter|phind|codeium|supermaven"
-      PATTERNS="$PATTERNS|mistral|llama|deepseek|qwen|cohere|perplexity"
-      PATTERNS="$PATTERNS|co-authored-by|ai-generated|ai-assisted|ai-written|llm-generated|ai-coded"
-      PATTERNS="$PATTERNS|generated (by|with|using|via).*(ai|llm|model|assistant|bot)"
-      PATTERNS="$PATTERNS|written (by|with).*(ai|llm|bot|assistant|agent)"
-      echo "Scanning all tracked files for AI references..."
-      if git grep -i -E "$PATTERNS" HEAD; then
+      PATTERNS='\bclaude\b|\banthropic\b|\bopenai\b|\bcopilot\b|\bchatgpt\b'
+      PATTERNS="$PATTERNS|\bgpt-[0-9]|\bopenai-o[1-9]\b|\bo[1-9]-(mini|preview|pro)\b"
+      PATTERNS="$PATTERNS|\bgemini-(pro|flash|ultra|nano)\b|google bard"
+      PATTERNS="$PATTERNS|\bcodex\b|\bcodewhisperer\b|amazon q\b|\btabnine\b"
+      PATTERNS="$PATTERNS|\bwindsurf\b|cursor\.(com|so|ai)|cursor (ai|editor|composer|tab)"
+      PATTERNS="$PATTERNS|\baider\b|sourcegraph cody|sourcegraph ai"
+      PATTERNS="$PATTERNS|\bdevin\b|cognition (ai|labs)|replit ai|\bghostwriter\b"
+      PATTERNS="$PATTERNS|phind\.com|\bcodeium\b|\bsupermaven\b"
+      PATTERNS="$PATTERNS|mistral (ai|large|medium|small)|\bllama-?[0-9]"
+      PATTERNS="$PATTERNS|\bdeepseek\b|\bqwen\b|cohere (ai|api)|perplexity (ai|api)"
+      PATTERNS="$PATTERNS|co-authored-by:.*claude|co-authored-by:.*anthropic"
+      PATTERNS="$PATTERNS|ai-(generated|assisted|written|coded)|llm-generated"
+      PATTERNS="$PATTERNS|generated (by|with|using|via) (ai|claude|gpt|chatgpt|copilot)"
+      PATTERNS="$PATTERNS|written (by|with) (an? )?(ai|llm|bot|assistant|agent)"
+      echo "Scanning tracked files for AI references..."
+      if git grep -i -E "$PATTERNS" HEAD -- \
+        ':!.gitlab-ci.yml' \
+        ':!*.min.js' \
+        ':!*.min.css' \
+        ':!Resources/Public/JavaScript/*.js' \
+        ':!Resources/Public/Css/*.css' \
+        ':!composer.lock' \
+        ':!package-lock.json'; then
         echo ""
         echo "BLOCKED: AI/tool reference found in tracked files."
         echo "Fix before pushing to public repo."
