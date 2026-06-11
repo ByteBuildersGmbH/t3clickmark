@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\Configuration;
 
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -44,6 +45,35 @@ class AccessControl
     public static function getAllowedBackendUsers(): string
     {
         return trim((string) self::readProConfig('allowedBackendUsers', ''));
+    }
+
+    /**
+     * Returns true when the given backend user may use ClickMark features
+     * (backend module, widget, context menu, DocHeader button).
+     *
+     * Rules:
+     *   - admin → always allowed
+     *   - allowedBackendUsers list configured → only users in that list
+     *   - list empty → users with t3clickmark module permission
+     */
+    public static function hasBackendUserAccess(?BackendUserAuthentication $backendUser): bool
+    {
+        if ($backendUser === null) {
+            return false;
+        }
+
+        if ($backendUser->isAdmin()) {
+            return true;
+        }
+
+        $allowedUsers = self::getAllowedBackendUsers();
+
+        if ($allowedUsers === '') {
+            return (bool) $backendUser->check('modules', 't3clickmark');
+        }
+
+        $allowed = GeneralUtility::trimExplode(',', $allowedUsers, true);
+        return in_array($backendUser->user['username'] ?? '', $allowed, true);
     }
 
     /**

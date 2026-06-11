@@ -97,7 +97,7 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
         // Same-domain: authenticated BE_USER
         $beUserUid = (int)($GLOBALS['BE_USER']->user['uid'] ?? 0);
         if ($beUserUid > 0) {
-            return $this->hasT3cmAccess($GLOBALS['BE_USER']);
+            return AccessControl::hasBackendUserAccess($GLOBALS['BE_USER']);
         }
 
         // Cross-domain: valid session cookie
@@ -110,17 +110,6 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
         return false;
     }
 
-    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser): bool
-    {
-        $allowedUsers = AccessControl::getAllowedBackendUsers();
-
-        if ($allowedUsers === '') {
-            return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();
-        }
-
-        $allowed = GeneralUtility::trimExplode(',', $allowedUsers, true);
-        return in_array($backendUser->user['username'] ?? '', $allowed, true);
-    }
 
     /**
      * Find T3CM begin markers and inject data attributes onto the next HTML opening tag.

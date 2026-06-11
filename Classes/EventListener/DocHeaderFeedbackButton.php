@@ -43,7 +43,7 @@ class DocHeaderFeedbackButton
 
         // Only show button if the user has ClickMark access
         $backendUser = $GLOBALS['BE_USER'] ?? null;
-        if ($backendUser === null || !$this->hasT3cmAccess($backendUser)) {
+        if (!AccessControl::hasBackendUserAccess($backendUser)) {
             return;
         }
 
@@ -145,15 +145,4 @@ class DocHeaderFeedbackButton
         $event->setButtons($buttons);
     }
 
-    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser): bool
-    {
-        $allowedUsers = AccessControl::getAllowedBackendUsers();
-
-        if ($allowedUsers === '') {
-            return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();
-        }
-
-        $allowed = GeneralUtility::trimExplode(',', $allowedUsers, true);
-        return in_array($backendUser->user['username'] ?? '', $allowed, true);
-    }
 }

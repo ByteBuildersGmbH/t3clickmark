@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\Controller;
 
+use ByteBuilders\T3ClickMark\Configuration\AccessControl;
 use ByteBuilders\T3ClickMark\Domain\Model\Feedback;
 use ByteBuilders\T3ClickMark\Domain\Model\FeedbackComment;
 use ByteBuilders\T3ClickMark\Domain\Repository\FeedbackRepository;
@@ -28,6 +29,28 @@ class FeedbackController extends ActionController
         protected readonly ModuleTemplateFactory $moduleTemplateFactory,
         protected readonly PersistenceManager $persistenceManager,
     ) {
+    }
+
+    /**
+     * Authorize every backend module request: deny access when the
+     * current backend user is not on the allowedBackendUsers list (Pro)
+     * or lacks the t3clickmark module permission (free default).
+     *
+     * Without this check the module would be reachable for every
+     * authenticated backend user, because TYPO3's "access => user"
+     * setting in Configuration/Backend/Modules.php cannot read our
+     * custom Pro-gated configuration.
+     */
+    protected function initializeAction(): void
+    {
+        parent::initializeAction();
+
+        if (!AccessControl::hasBackendUserAccess($GLOBALS['BE_USER'] ?? null)) {
+            throw new \TYPO3\CMS\Core\Exception(
+                'Access denied: this backend user is not allowed to use ClickMark.',
+                1749635000
+            );
+        }
     }
 
     public function listAction(

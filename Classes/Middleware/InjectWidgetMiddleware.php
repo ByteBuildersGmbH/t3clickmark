@@ -126,7 +126,7 @@ class InjectWidgetMiddleware implements MiddlewareInterface
         $beUserUid = (int)($GLOBALS['BE_USER']->user['uid'] ?? 0);
 
         if ($beUserUid > 0) {
-            if (!$this->hasT3cmAccess($GLOBALS['BE_USER'])) {
+            if (!AccessControl::hasBackendUserAccess($GLOBALS['BE_USER'])) {
                 return null;
             }
             return [
@@ -148,18 +148,6 @@ class InjectWidgetMiddleware implements MiddlewareInterface
         }
 
         return $this->lookupBackendUser($userId);
-    }
-
-    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser): bool
-    {
-        $allowedUsers = AccessControl::getAllowedBackendUsers();
-
-        if ($allowedUsers === '') {
-            return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();
-        }
-
-        $allowed = GeneralUtility::trimExplode(',', $allowedUsers, true);
-        return in_array($backendUser->user['username'] ?? '', $allowed, true);
     }
 
     /**

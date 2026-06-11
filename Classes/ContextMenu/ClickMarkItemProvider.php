@@ -44,7 +44,7 @@ class ClickMarkItemProvider extends AbstractProvider
     public function addItems(array $items): array
     {
         // Only show for users with ClickMark access
-        if (!$this->hasT3cmAccess($GLOBALS['BE_USER'])) {
+        if (!AccessControl::hasBackendUserAccess($GLOBALS['BE_USER'])) {
             return $items;
         }
 
@@ -115,15 +115,4 @@ class ClickMarkItemProvider extends AbstractProvider
         }
     }
 
-    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser): bool
-    {
-        $allowedUsers = AccessControl::getAllowedBackendUsers();
-
-        if ($allowedUsers === '') {
-            return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();
-        }
-
-        $allowed = GeneralUtility::trimExplode(',', $allowedUsers, true);
-        return in_array($backendUser->user['username'] ?? '', $allowed, true);
-    }
 }
