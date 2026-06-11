@@ -100,6 +100,15 @@ class AgencyDeskSyncService
             )->fetchAssociative();
 
             if ($localRow === false) {
+                // Not yet present on this TYPO3 install — pull it in so editors on
+                // staging/live mirrors see the full project's tickets, not just
+                // the ones submitted locally.
+                $localUid = $this->createFromRemote($remote);
+                if ($localUid === null) {
+                    continue;
+                }
+                $this->syncComments($apiKey, $remoteId, $localUid);
+                $count++;
                 continue;
             }
 
@@ -122,6 +131,67 @@ class AgencyDeskSyncService
         }
 
         return $count;
+    }
+
+    /**
+     * Insert a new local feedback record from a remote AgencyDesk payload.
+     * Returns the new uid, or null if the payload was invalid.
+     *
+     * Screenshots and attachments are not pulled in — they remain accessible
+     * via the linked Jira ticket and the AgencyDesk dashboard.
+     */
+    private function createFromRemote(array $remote): ?int
+    {
+        $title = trim((string)($remote['title'] ?? ''));
+        if ($title === '') {
+            return null;
+        }
+
+        $connection = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getConnectionForTable('tx_t3clickmark_domain_model_feedback');
+
+        $now = time();
+        $createdAt = isset($remote['created_at']) ? (int)strtotime((string)$remote['created_at']) : 0;
+        if ($createdAt <= 0) {
+            $createdAt = $now;
+        }
+
+        $jiraKey = trim((string)($remote['jira_issue_key'] ?? ''));
+        $jiraUrl = trim((string)($remote['jira_issue_url'] ?? ''));
+
+        $browser = trim((string)($remote['browser'] ?? ''));
+        $os = trim((string)($remote['os'] ?? ''));
+        $browserInfo = trim($browser . ($os !== '' ? ' / ' . $os : ''));
+
+        $record = [
+            'pid' => 0,
+            'tstamp' => $now,
+            'crdate' => $createdAt,
+            'title' => $title,
+            'description' => (string)($remote['description'] ?? ''),
+            'status' => (string)($remote['status'] ?? 'open'),
+            'priority' => (string)($remote['priority'] ?? 'medium'),
+            'category' => (string)($remote['category'] ?? 'change_request'),
+            'page_uid' => (int)($remote['page_uid'] ?? 0),
+            'content_uid' => (int)($remote['content_uid'] ?? 0),
+            'content_type' => (string)($remote['content_type'] ?? ''),
+            'page_url' => (string)($remote['page_url'] ?? ''),
+            'backend_edit_link' => (string)($remote['backend_edit_link'] ?? ''),
+            'browser_info' => $browserInfo,
+            'viewport' => (string)($remote['viewport'] ?? ''),
+            'css_selector' => (string)($remote['css_selector'] ?? ''),
+            'console_errors' => (int)($remote['console_errors'] ?? 0),
+            'console_warnings' => (int)($remote['console_warnings'] ?? 0),
+            'failed_requests' => (int)($remote['failed_requests'] ?? 0),
+            'backend_user' => (int)($remote['backend_user_id'] ?? 0),
+            'backend_username' => (string)($remote['backend_username'] ?? ''),
+            'external_id' => (string)($remote['id'] ?? ''),
+            'external_url' => $jiraUrl !== '' ? $jiraUrl : $jiraKey,
+            'synced_at' => $now,
+        ];
+
+        $connection->insert('tx_t3clickmark_domain_model_feedback', $record);
+        return (int)$connection->lastInsertId();
     }
 
     /**
