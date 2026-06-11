@@ -52,9 +52,17 @@ class AccessControl
      * (backend module, widget, context menu, DocHeader button).
      *
      * Rules:
-     *   - admin → always allowed
-     *   - allowedBackendUsers list configured → only users in that list
-     *   - list empty → users with t3clickmark module permission
+     *   - allowedBackendUsers list empty:
+     *       admins → always allowed
+     *       others → allowed when they have the t3clickmark module permission
+     *   - allowedBackendUsers list set (Pro):
+     *       strict whitelist — only users on the list, admin status is ignored
+     *
+     * When the whitelist is configured, admins who are not on the list lose
+     * access too. This is intentional (variant "C"): once you turn on the
+     * whitelist, you opt into full control. Make sure to include the admins
+     * that should keep access; otherwise they can recover by clearing the
+     * value in the t3clickmark_pro extension configuration via CLI or DB.
      */
     public static function hasBackendUserAccess(?BackendUserAuthentication $backendUser): bool
     {
@@ -62,16 +70,18 @@ class AccessControl
             return false;
         }
 
-        if ($backendUser->isAdmin()) {
-            return true;
-        }
-
         $allowedUsers = self::getAllowedBackendUsers();
 
         if ($allowedUsers === '') {
+            // No Pro whitelist — fall back to standard TYPO3 module permissions.
+            // Admins keep their normal blanket access here.
+            if ($backendUser->isAdmin()) {
+                return true;
+            }
             return (bool) $backendUser->check('modules', 't3clickmark');
         }
 
+        // Strict whitelist — admin status is intentionally ignored.
         $allowed = GeneralUtility::trimExplode(',', $allowedUsers, true);
         return in_array($backendUser->user['username'] ?? '', $allowed, true);
     }
