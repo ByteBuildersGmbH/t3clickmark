@@ -76,11 +76,13 @@ class FeedbackController extends ActionController
         // doesn't reliably resolve type=file TCA fields to ?FileReference.
         $annotatedFile = $this->resolveFileReference($feedback, 'annotated_screenshot');
         $attachmentFiles = $this->resolveFileReferences($feedback, 'attachments');
+        $videoFile = $this->resolveFileReference($feedback, 'video_recording');
 
         $moduleTemplate->assignMultiple([
             'feedback' => $feedbackObj,
             'annotatedFile' => $annotatedFile,
             'attachmentFiles' => $attachmentFiles,
+            'videoFile' => $videoFile,
             'highlightLatest' => ($highlight === 'latest'),
         ]);
 

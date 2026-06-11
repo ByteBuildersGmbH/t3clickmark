@@ -65,6 +65,23 @@
                     </div>
                 </div>
 
+                <!-- Video Recording (Pro feature) -->
+                <f:if condition="{videoFile}">
+                    <div class="t3cm-card">
+                        <div class="t3cm-card-header">
+                            <span style="color: #ef4444; margin-right: 6px;">&#9679;</span>
+                            Video Recording
+                        </div>
+                        <div class="t3cm-card-body t3cm-card-body--flush">
+                            <video controls playsinline preload="metadata"
+                                   style="width: 100%; max-height: 400px; background: #000; border-radius: 0 0 8px 8px;">
+                                <source src="{videoFile.originalFile.publicUrl}" type="video/webm" />
+                                Your browser does not support video playback.
+                            </video>
+                        </div>
+                    </div>
+                </f:if>
+
                 <!-- Description -->
                 <f:if condition="{feedback.description}">
                     <div class="t3cm-card">

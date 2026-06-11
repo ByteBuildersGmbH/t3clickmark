@@ -6,8 +6,8 @@ namespace ByteBuilders\T3ClickMark\Controller;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use ByteBuilders\T3ClickMark\Configuration\AccessControl;
 use ByteBuilders\T3ClickMark\Service\AgencyDeskForwardingService;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
@@ -23,11 +23,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class FeedbackApiController
 {
-    /**
-     * AgencyDesk API base URL. Changed per release cycle.
-     */
-    private const API_ENDPOINT = 'https://clickmark.bytebuilders.de/api/v1';
-
     public function submitAction(ServerRequestInterface $request): ResponseInterface
     {
         $parsedBody = $request->getParsedBody();
@@ -85,6 +80,7 @@ class FeedbackApiController
             'backend_username' => $parsedBody['backendUsername'] ?? '',
             'annotated_screenshot' => 0,
             'attachments' => 0,
+            'video_recording' => 0,
         ];
 
         $connection->insert('tx_t3clickmark_domain_model_feedback', $record);
@@ -123,9 +119,22 @@ class FeedbackApiController
             $attachmentCount++;
         }
 
+        // Handle video recording upload (Pro feature — WebM, max 50 MB)
+        $videoTempPath = null;
+        if (!empty($uploadedFiles['videoRecording'])) {
+            $videoFile = $uploadedFiles['videoRecording'];
+            if ($videoFile->getSize() > 0 && $videoFile->getSize() <= 50 * 1024 * 1024) {
+                $videoTempPath = GeneralUtility::tempnam('t3cm_vid_') . '.webm';
+                $stream = $videoFile->getStream();
+                $stream->rewind();
+                file_put_contents($videoTempPath, $stream->getContents());
+                $this->storeFile($feedbackUid, $videoFile, 'video_recording', 1);
+            }
+        }
+
         // Forward to AgencyDesk API if configured
         $forwardingService = GeneralUtility::makeInstance(AgencyDeskForwardingService::class);
-        $agencyDeskResult = $forwardingService->forwardFromParsedBody($parsedBody, $screenshotTempPath, $attachmentTempPaths);
+        $agencyDeskResult = $forwardingService->forwardFromParsedBody($parsedBody, $screenshotTempPath, $attachmentTempPaths, $videoTempPath);
 
         // Store AgencyDesk feedback ID for sync-back matching
         if (isset($agencyDeskResult['forwarded']) && $agencyDeskResult['forwarded'] && isset($agencyDeskResult['response']['id'])) {
@@ -144,6 +153,9 @@ class FeedbackApiController
             if (file_exists($att['path'])) {
                 unlink($att['path']);
             }
+        }
+        if ($videoTempPath !== null && file_exists($videoTempPath)) {
+            unlink($videoTempPath);
         }
 
         $response = [
@@ -170,11 +182,8 @@ class FeedbackApiController
             return false;
         }
 
-        // In public mode, accept backendUserId = 0
-        $isPublic = !empty(
-            GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('t3clickmark')['publicWidget'] ?? false
-        );
-        if ($backendUserId <= 0 && !$isPublic) {
+        // In public mode (Pro feature), accept backendUserId = 0
+        if ($backendUserId <= 0 && !AccessControl::isPublicWidgetEnabled()) {
             return false;
         }
 

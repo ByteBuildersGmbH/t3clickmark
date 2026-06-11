@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\Controller;
 
+use ByteBuilders\T3ClickMark\Configuration\PlatformEndpoint;
 use ByteBuilders\T3ClickMark\Service\ClickMarkConnectionService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -18,8 +19,6 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class OAuthCallbackController
 {
-    private const PLATFORM_URL = 'https://clickmark.bytebuilders.de';
-
     public function handleCallback(ServerRequestInterface $request): ResponseInterface
     {
         $queryParams = $request->getQueryParams();
@@ -34,7 +33,7 @@ class OAuthCallbackController
         try {
             $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
             $response = $requestFactory->request(
-                self::PLATFORM_URL . '/oauth/token',
+                PlatformEndpoint::getPlatformUrl() . '/oauth/token',
                 'POST',
                 [
                     'headers' => [

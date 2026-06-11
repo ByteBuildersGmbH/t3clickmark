@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\EventListener;
 
+use ByteBuilders\T3ClickMark\Configuration\AccessControl;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\Components\ButtonBar;
 use TYPO3\CMS\Backend\Template\Components\ModifyButtonBarEvent;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Imaging\IconFactory;
@@ -147,8 +147,7 @@ class DocHeaderFeedbackButton
 
     private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser): bool
     {
-        $config = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('t3clickmark');
-        $allowedUsers = trim($config['allowedBackendUsers'] ?? '');
+        $allowedUsers = AccessControl::getAllowedBackendUsers();
 
         if ($allowedUsers === '') {
             return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\Service;
 
+use ByteBuilders\T3ClickMark\Configuration\PlatformEndpoint;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\RequestFactory;
@@ -13,10 +14,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * Forwards feedback records to the AgencyDesk API (server-to-server).
  * Used by FeedbackApiController (widget submissions), FeedbackController (BE form),
  * and DataHandler hook (record_edit).
+ *
+ * The target URL is resolved via PlatformEndpoint::getApiEndpoint() and can
+ * be overridden via Extension Configuration (t3clickmark > apiEndpoint).
  */
 class AgencyDeskForwardingService
 {
-    private const API_ENDPOINT = 'https://clickmark.bytebuilders.de/api/v1';
 
     /**
      * Forward a feedback record (by UID) to AgencyDesk.
@@ -85,7 +88,7 @@ class AgencyDeskForwardingService
      * Forward raw parsed body data to AgencyDesk (used by widget eID handler).
      * Supports optional screenshot and attachment file paths.
      */
-    public function forwardFromParsedBody(array $parsedBody, ?string $screenshotPath = null, array $attachmentPaths = []): ?array
+    public function forwardFromParsedBody(array $parsedBody, ?string $screenshotPath = null, array $attachmentPaths = [], ?string $videoPath = null): ?array
     {
         $apiKey = $this->getApiKey();
         if ($apiKey === null) {
@@ -113,7 +116,7 @@ class AgencyDeskForwardingService
             'backendUserId' => (string)($parsedBody['backendUserId'] ?? '0'),
         ];
 
-        return $this->sendToApi($apiKey, $fields, $screenshotPath, $attachmentPaths);
+        return $this->sendToApi($apiKey, $fields, $screenshotPath, $attachmentPaths, $videoPath);
     }
 
     /**
@@ -139,7 +142,7 @@ class AgencyDeskForwardingService
         try {
             $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
             $requestFactory->request(
-                rtrim(self::API_ENDPOINT, '/') . '/feedback/' . $externalId . '/comments',
+                PlatformEndpoint::getApiEndpoint() . '/feedback/' . $externalId . '/comments',
                 'POST',
                 [
                     'headers' => [
@@ -180,7 +183,7 @@ class AgencyDeskForwardingService
         try {
             $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
             $requestFactory->request(
-                rtrim(self::API_ENDPOINT, '/') . '/feedback/' . $externalId . '/status',
+                PlatformEndpoint::getApiEndpoint() . '/feedback/' . $externalId . '/status',
                 'PATCH',
                 [
                     'headers' => [
@@ -207,7 +210,7 @@ class AgencyDeskForwardingService
         return $apiKey !== '' ? $apiKey : null;
     }
 
-    private function sendToApi(string $apiKey, array $fields, ?string $screenshotPath = null, array $attachmentPaths = []): array
+    private function sendToApi(string $apiKey, array $fields, ?string $screenshotPath = null, array $attachmentPaths = [], ?string $videoPath = null): array
     {
         $boundary = 'T3ClickMark' . uniqid();
         $body = '';
@@ -237,12 +240,20 @@ class AgencyDeskForwardingService
             }
         }
 
+        if ($videoPath !== null && file_exists($videoPath)) {
+            $fileContent = file_get_contents($videoPath);
+            $body .= '--' . $boundary . "\r\n";
+            $body .= 'Content-Disposition: form-data; name="videoRecording"; filename="recording.webm"' . "\r\n";
+            $body .= 'Content-Type: video/webm' . "\r\n\r\n";
+            $body .= $fileContent . "\r\n";
+        }
+
         $body .= '--' . $boundary . "--\r\n";
 
         try {
             $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
             $response = $requestFactory->request(
-                rtrim(self::API_ENDPOINT, '/') . '/feedback',
+                PlatformEndpoint::getApiEndpoint() . '/feedback',
                 'POST',
                 [
                     'headers' => [

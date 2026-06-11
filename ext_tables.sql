@@ -28,6 +28,9 @@ CREATE TABLE tx_t3clickmark_domain_model_feedback (
     -- Attachments (FAL references — images, PDFs)
     attachments int(11) unsigned DEFAULT '0',
 
+    -- Video recording (FAL reference — WebM, Pro feature)
+    video_recording int(11) unsigned DEFAULT '0',
+
     -- TYPO3 backend user who submitted
     backend_user int(11) DEFAULT '0' NOT NULL,
     backend_username varchar(255) DEFAULT '' NOT NULL,

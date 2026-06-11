@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\ContextMenu;
 
+use ByteBuilders\T3ClickMark\Configuration\AccessControl;
 use ByteBuilders\T3ClickMark\Service\CrossDomainTokenService;
 use TYPO3\CMS\Backend\ContextMenu\ItemProviders\AbstractProvider;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -117,8 +117,7 @@ class ClickMarkItemProvider extends AbstractProvider
 
     private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser): bool
     {
-        $config = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('t3clickmark');
-        $allowedUsers = trim($config['allowedBackendUsers'] ?? '');
+        $allowedUsers = AccessControl::getAllowedBackendUsers();
 
         if ($allowedUsers === '') {
             return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();

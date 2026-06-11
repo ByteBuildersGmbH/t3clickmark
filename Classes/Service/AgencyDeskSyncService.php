@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\Service;
 
+use ByteBuilders\T3ClickMark\Configuration\PlatformEndpoint;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\RequestFactory;
@@ -13,10 +14,12 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 /**
  * Syncs feedback statuses and comments from AgencyDesk back into TYPO3.
  * Called on backend module load to keep local records up-to-date.
+ *
+ * The source URL is resolved via PlatformEndpoint::getApiEndpoint() and can
+ * be overridden via Extension Configuration (t3clickmark > apiEndpoint).
  */
 class AgencyDeskSyncService
 {
-    private const API_ENDPOINT = 'https://clickmark.bytebuilders.de/api/v1';
     private const REGISTRY_NAMESPACE = 'tx_t3clickmark';
     private const REGISTRY_KEY = 'last_sync_timestamp';
     private const MIN_SYNC_INTERVAL = 60; // seconds — don't sync more than once per minute
@@ -46,7 +49,7 @@ class AgencyDeskSyncService
         try {
             $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
             $response = $requestFactory->request(
-                rtrim(self::API_ENDPOINT, '/') . '/feedback?updated_since=' . urlencode($lastSyncIso),
+                PlatformEndpoint::getApiEndpoint() . '/feedback?updated_since=' . urlencode($lastSyncIso),
                 'GET',
                 [
                     'headers' => ['X-API-Key' => $apiKey],
@@ -129,7 +132,7 @@ class AgencyDeskSyncService
         try {
             $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
             $response = $requestFactory->request(
-                rtrim(self::API_ENDPOINT, '/') . '/feedback/' . $agencyDeskFeedbackId . '/comments',
+                PlatformEndpoint::getApiEndpoint() . '/feedback/' . $agencyDeskFeedbackId . '/comments',
                 'GET',
                 ['headers' => ['X-API-Key' => $apiKey]]
             );

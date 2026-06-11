@@ -23,7 +23,7 @@ return [
                     title, description,
                     --palette--;;priority_category,
                 --div--;Attachments,
-                    annotated_screenshot, attachments,
+                    annotated_screenshot, attachments, video_recording,
                 --div--;Element Context,
                     --palette--;;element_context,
                     page_url, backend_edit_link,
@@ -220,6 +220,14 @@ return [
                 'type' => 'file',
                 'maxitems' => 5,
                 'allowed' => 'png,jpg,jpeg,webp,gif,pdf',
+            ],
+        ],
+        'video_recording' => [
+            'label' => 'Video Recording',
+            'config' => [
+                'type' => 'file',
+                'maxitems' => 1,
+                'allowed' => 'webm,mp4',
             ],
         ],
         'backend_user' => [

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\Middleware;
 
+use ByteBuilders\T3ClickMark\Configuration\AccessControl;
 use ByteBuilders\T3ClickMark\Service\CrossDomainTokenService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\RedirectResponse;
@@ -117,10 +117,8 @@ class InjectWidgetMiddleware implements MiddlewareInterface
      */
     private function resolveBackendUser(ServerRequestInterface $request): ?array
     {
-        $config = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('t3clickmark');
-
-        // Public mode: inject widget for everyone — no backend user needed
-        if (!empty($config['publicWidget'])) {
+        // Public mode (Pro feature): inject widget for everyone, no backend user needed
+        if (AccessControl::isPublicWidgetEnabled()) {
             return ['uid' => 0, 'username' => ''];
         }
 
@@ -128,7 +126,7 @@ class InjectWidgetMiddleware implements MiddlewareInterface
         $beUserUid = (int)($GLOBALS['BE_USER']->user['uid'] ?? 0);
 
         if ($beUserUid > 0) {
-            if (!$this->hasT3cmAccess($GLOBALS['BE_USER'], $config)) {
+            if (!$this->hasT3cmAccess($GLOBALS['BE_USER'])) {
                 return null;
             }
             return [
@@ -152,9 +150,9 @@ class InjectWidgetMiddleware implements MiddlewareInterface
         return $this->lookupBackendUser($userId);
     }
 
-    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser, array $config): bool
+    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser): bool
     {
-        $allowedUsers = trim($config['allowedBackendUsers'] ?? '');
+        $allowedUsers = AccessControl::getAllowedBackendUsers();
 
         if ($allowedUsers === '') {
             return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();
@@ -223,11 +221,15 @@ class InjectWidgetMiddleware implements MiddlewareInterface
 
         $backendUserId = $backendUser['uid'];
 
+        // Build backend base URL for fallback edit links (video/non-element captures)
+        $backendBaseUrl = GeneralUtility::getIndpEnv('TYPO3_SITE_URL') . 'typo3';
+
         return [
             'widgetPosition' => trim($settings['widgetPosition'] ?? 'right-center'),
             'backendUser' => $backendUser['username'],
             'backendUserId' => $backendUserId,
             'submissionToken' => $this->generateSubmissionToken($backendUserId),
+            'backendBaseUrl' => $backendBaseUrl,
         ];
     }
 

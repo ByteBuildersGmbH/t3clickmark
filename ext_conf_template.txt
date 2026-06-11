@@ -1,8 +1,2 @@
 # cat=agencydesk; type=string; label=AgencyDesk API Key:64-character API key from your AgencyDesk project. Leave empty for local-only mode.
 apiKey =
-
-# cat=access/user/20; type=string; label=Allowed Backend Users (leave empty for all):Comma-separated list of backend usernames that may use ClickMark (module, widget, buttons). Leave empty to allow all authenticated backend users. Only system maintainers can change this setting.
-allowedBackendUsers =
-
-# cat=access/user/30; type=boolean; label=Public Widget (no login required):If enabled, the ClickMark widget is injected on all frontend pages regardless of backend user login. Anyone can submit feedback. Leave off for agency/internal use.
-publicWidget = 0

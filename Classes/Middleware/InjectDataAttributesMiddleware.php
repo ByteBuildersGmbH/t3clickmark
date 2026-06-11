@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\Middleware;
 
+use ByteBuilders\T3ClickMark\Configuration\AccessControl;
 use ByteBuilders\T3ClickMark\Service\CrossDomainTokenService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\Stream;
@@ -89,17 +89,15 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
      */
     private function hasClickMarkAccess(ServerRequestInterface $request): bool
     {
-        $config = GeneralUtility::makeInstance(ExtensionConfiguration::class)->get('t3clickmark');
-
-        // Public mode: always grant access regardless of backend user
-        if (!empty($config['publicWidget'])) {
+        // Public mode (Pro feature): always grant access regardless of backend user
+        if (AccessControl::isPublicWidgetEnabled()) {
             return true;
         }
 
         // Same-domain: authenticated BE_USER
         $beUserUid = (int)($GLOBALS['BE_USER']->user['uid'] ?? 0);
         if ($beUserUid > 0) {
-            return $this->hasT3cmAccess($GLOBALS['BE_USER'], $config);
+            return $this->hasT3cmAccess($GLOBALS['BE_USER']);
         }
 
         // Cross-domain: valid session cookie
@@ -112,9 +110,9 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
         return false;
     }
 
-    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser, array $config): bool
+    private function hasT3cmAccess(\TYPO3\CMS\Core\Authentication\BackendUserAuthentication $backendUser): bool
     {
-        $allowedUsers = trim($config['allowedBackendUsers'] ?? '');
+        $allowedUsers = AccessControl::getAllowedBackendUsers();
 
         if ($allowedUsers === '') {
             return $backendUser->check('modules', 't3clickmark') || $backendUser->isAdmin();
