@@ -27,7 +27,7 @@ composer require bytebuilders/t3clickmark
 
 ### Via TYPO3 Extension Manager
 
-Download `t3clickmark.zip` and upload it in Admin Tools > Extensions.
+Search for `t3clickmark` under Admin Tools > Extensions > Get Extensions, or download from the [TYPO3 Extension Repository](https://extensions.typo3.org/extension/t3clickmark).
 
 ### After installation
 
@@ -59,6 +59,8 @@ In Admin Tools > Settings > Extension Configuration > T3ClickMark:
 
 - **Website**: [clickmark.it](https://clickmark.it)
 - **Documentation**: [clickmark.it/docs](https://clickmark.it/docs)
+- **TER**: [extensions.typo3.org/extension/t3clickmark](https://extensions.typo3.org/extension/t3clickmark)
+- **Packagist**: [packagist.org/packages/bytebuilders/t3clickmark](https://packagist.org/packages/bytebuilders/t3clickmark)
 - **Issues**: [GitHub Issues](https://github.com/ByteBuildersGmbH/t3clickmark/issues)
 
 ## License
