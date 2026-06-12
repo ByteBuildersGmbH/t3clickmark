@@ -46,10 +46,17 @@ audit-ai-references:
 # Mirror to GitHub on tag push (only after audit passes)
 mirror-to-github:
   stage: deploy
+  image: alpine:latest
   only:
     - tags
   needs:
     - audit-ai-references
+  before_script:
+    - apk add --no-cache git openssh-client
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - cp "$GITHUB_DEPLOY_KEY" ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
+    - ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
   script:
     - git remote add github git@github.com:ByteBuildersGmbH/t3clickmark.git || true
     - git push github HEAD:main --tags
