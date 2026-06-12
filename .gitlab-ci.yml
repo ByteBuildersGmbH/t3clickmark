@@ -71,4 +71,4 @@ mirror-to-github:
     - ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
   script:
     - git remote add github git@github.com:ByteBuildersGmbH/t3clickmark.git || true
-    - git push github HEAD:main --tags
+    - git push github HEAD:refs/heads/main --tags
