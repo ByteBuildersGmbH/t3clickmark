@@ -54,6 +54,9 @@ mirror-to-github:
       when: manual
   needs:
     - audit-ai-references
+  variables:
+    GIT_DEPTH: "0"
+    GIT_STRATEGY: clone
   before_script:
     - apk add --no-cache git openssh-client
     - mkdir -p ~/.ssh && chmod 700 ~/.ssh
@@ -70,5 +73,8 @@ mirror-to-github:
     - ssh-keygen -y -f ~/.ssh/id_ed25519 > /tmp/derived.pub && echo "Key OK; derived pub fingerprint = $(ssh-keygen -lf /tmp/derived.pub)" || (echo "ERROR Key still malformed after autofix"; exit 1)
     - ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
   script:
+    # Ensure full history + all tags are available (shallow clones break push to empty repo)
+    - git fetch --unshallow origin 2>/dev/null || true
+    - git fetch origin --tags
     - git remote add github git@github.com:ByteBuildersGmbH/t3clickmark.git || true
     - git push github HEAD:refs/heads/main --tags
