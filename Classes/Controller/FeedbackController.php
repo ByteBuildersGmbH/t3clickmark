@@ -73,7 +73,11 @@ class FeedbackController extends ActionController
         $isConnected = $connectionService->isConnected();
         $callbackUrl = GeneralUtility::getIndpEnv('TYPO3_SITE_URL') . '?eID=t3clickmark_oauth_callback';
 
+        // Outbox: how many feedback items failed to reach the platform?
+        $pendingDeliveryCount = $this->countFailedDeliveries();
+
         $moduleTemplate->assignMultiple([
+            'pendingDeliveryCount' => $pendingDeliveryCount,
             'feedbacks' => $feedbacks,
             'totalCount' => $feedbacks->count(),
             'statusCounts' => $this->feedbackRepository->countByStatus(),
@@ -87,6 +91,71 @@ class FeedbackController extends ActionController
         ]);
 
         return $moduleTemplate->renderResponse('Feedback/List');
+    }
+
+    /**
+     * Manually re-deliver feedback that failed to reach the platform.
+     * Backstop for installations without a working scheduler/cron.
+     */
+    public function retryDeliveryAction(): ResponseInterface
+    {
+        $forwarding = GeneralUtility::makeInstance(AgencyDeskForwardingService::class);
+        $uids = $this->findFailedDeliveryUids();
+
+        $delivered = 0;
+        foreach ($uids as $uid) {
+            $result = $forwarding->forwardFeedback((int)$uid);
+            if (is_array($result) && !empty($result['forwarded'])) {
+                $delivered++;
+            }
+        }
+
+        $total = count($uids);
+        $this->addFlashMessage(
+            sprintf('%d of %d pending feedback item(s) delivered to ClickMark.', $delivered, $total),
+            'ClickMark delivery',
+            $delivered === $total
+                ? \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::OK
+                : \TYPO3\CMS\Core\Type\ContextualFeedbackSeverity::WARNING
+        );
+
+        return $this->redirect('list');
+    }
+
+    /**
+     * Count feedback that failed to reach the platform (outbox).
+     */
+    protected function countFailedDeliveries(): int
+    {
+        $qb = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_t3clickmark_domain_model_feedback');
+
+        return (int)$qb->count('uid')
+            ->from('tx_t3clickmark_domain_model_feedback')
+            ->where(
+                $qb->expr()->eq('forward_status', $qb->createNamedParameter('failed')),
+                $qb->expr()->eq('external_id', $qb->createNamedParameter(''))
+            )
+            ->executeQuery()
+            ->fetchOne();
+    }
+
+    /**
+     * @return int[] uids of feedback that failed to reach the platform
+     */
+    protected function findFailedDeliveryUids(): array
+    {
+        $qb = GeneralUtility::makeInstance(ConnectionPool::class)
+            ->getQueryBuilderForTable('tx_t3clickmark_domain_model_feedback');
+
+        return array_map('intval', $qb->select('uid')
+            ->from('tx_t3clickmark_domain_model_feedback')
+            ->where(
+                $qb->expr()->eq('forward_status', $qb->createNamedParameter('failed')),
+                $qb->expr()->eq('external_id', $qb->createNamedParameter(''))
+            )
+            ->executeQuery()
+            ->fetchFirstColumn());
     }
 
     public function showAction(int $feedback, string $highlight = ''): ResponseInterface

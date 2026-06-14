@@ -22,6 +22,7 @@ return [
                 'update',
                 'updateStatus',
                 'addComment',
+                'retryDelivery',
             ],
         ],
     ],

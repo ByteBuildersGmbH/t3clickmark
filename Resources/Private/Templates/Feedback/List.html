@@ -14,6 +14,14 @@
         <!-- Connection banner -->
         <f:render partial="Feedback/ConnectionBanner" arguments="{isConnected: isConnected, dashboardUrl: dashboardUrl, callbackUrl: callbackUrl}" />
 
+        <!-- Outbox warning: feedback that failed to reach the platform -->
+        <f:if condition="{pendingDeliveryCount} > 0">
+            <div class="t3cm-delivery-warning" style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;padding:12px 16px;border-radius:8px;background:#fff4e5;border:1px solid #f0b37e;color:#7a4a00;">
+                <span>⚠️ <strong>{pendingDeliveryCount}</strong> Feedback wurde(n) noch nicht an ClickMark übermittelt (z.&nbsp;B. durch kurzzeitige Nichterreichbarkeit).</span>
+                <f:link.action action="retryDelivery" class="btn btn-warning" addQueryString="false" style="white-space:nowrap;">Jetzt erneut senden</f:link.action>
+            </div>
+        </f:if>
+
         <!-- Module header -->
         <div class="t3cm-module-header">
             <div class="t3cm-header-top">

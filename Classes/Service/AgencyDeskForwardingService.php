@@ -70,18 +70,66 @@ class AgencyDeskForwardingService
             [$fields['browser'], $fields['os']] = explode(' on ', $browserInfo, 2);
         }
 
-        $result = $this->sendToApi($apiKey, $fields);
+        // Re-attach the annotated screenshot (resolved from FAL) so a retried
+        // delivery is not degraded to a text-only ticket.
+        $screenshotPath = $this->resolveScreenshotPath($feedbackUid);
 
-        // Store the AgencyDesk feedback ID for sync-back matching
+        $result = $this->sendToApi($apiKey, $fields, $screenshotPath);
+
+        $now = time();
+        $attempts = (int)($record['forward_attempts'] ?? 0) + 1;
         if (isset($result['forwarded']) && $result['forwarded'] && isset($result['response']['id'])) {
+            // Delivered: store the AgencyDesk feedback ID and mark as sent.
             $connection->update(
                 'tx_t3clickmark_domain_model_feedback',
-                ['external_id' => (string)$result['response']['id']],
+                [
+                    'external_id' => (string)$result['response']['id'],
+                    'forward_status' => 'sent',
+                    'forward_attempts' => $attempts,
+                    'forward_last_error' => '',
+                    'forward_last_attempt' => $now,
+                ],
+                ['uid' => $feedbackUid]
+            );
+        } else {
+            // Delivery failed: mark for retry (scheduler/banner pick it up).
+            $error = (string)($result['error'] ?? ('HTTP ' . ($result['statusCode'] ?? '?')));
+            $connection->update(
+                'tx_t3clickmark_domain_model_feedback',
+                [
+                    'forward_status' => 'failed',
+                    'forward_attempts' => $attempts,
+                    'forward_last_error' => substr($error, 0, 2000),
+                    'forward_last_attempt' => $now,
+                ],
                 ['uid' => $feedbackUid]
             );
         }
 
         return $result;
+    }
+
+    /**
+     * Resolve the annotated screenshot of a feedback record to a local file path,
+     * or null if there is none. Used so re-deliveries keep the screenshot.
+     */
+    private function resolveScreenshotPath(int $feedbackUid): ?string
+    {
+        try {
+            $fileRepository = GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\FileRepository::class);
+            $references = $fileRepository->findByRelation(
+                'tx_t3clickmark_domain_model_feedback',
+                'annotated_screenshot',
+                $feedbackUid
+            );
+            if (empty($references)) {
+                return null;
+            }
+            $path = $references[0]->getOriginalFile()->getForLocalProcessing(false);
+            return $path !== '' && file_exists($path) ? $path : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     /**

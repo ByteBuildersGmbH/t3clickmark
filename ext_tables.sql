@@ -40,6 +40,14 @@ CREATE TABLE tx_t3clickmark_domain_model_feedback (
     external_url varchar(2048) DEFAULT '' NOT NULL,
     synced_at int(11) DEFAULT '0' NOT NULL,
 
+    -- Outbox / delivery tracking (forward to the ClickMark platform).
+    -- 'pending' = created, not (yet) delivered; 'sent' = reached the platform
+    -- (external_id set); 'failed' = a delivery attempt failed, retry pending.
+    forward_status varchar(20) DEFAULT 'pending' NOT NULL,
+    forward_attempts int(11) DEFAULT '0' NOT NULL,
+    forward_last_error text,
+    forward_last_attempt int(11) DEFAULT '0' NOT NULL,
+
     -- Comment count (Extbase relation)
     comments int(11) unsigned DEFAULT '0'
 );

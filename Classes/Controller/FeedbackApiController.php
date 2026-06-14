@@ -81,6 +81,8 @@ class FeedbackApiController
             'annotated_screenshot' => 0,
             'attachments' => 0,
             'video_recording' => 0,
+            'forward_status' => 'pending',
+            'forward_attempts' => 0,
         ];
 
         $connection->insert('tx_t3clickmark_domain_model_feedback', $record);
@@ -136,13 +138,34 @@ class FeedbackApiController
         $forwardingService = GeneralUtility::makeInstance(AgencyDeskForwardingService::class);
         $agencyDeskResult = $forwardingService->forwardFromParsedBody($parsedBody, $screenshotTempPath, $attachmentTempPaths, $videoTempPath);
 
-        // Store AgencyDesk feedback ID for sync-back matching
-        if (isset($agencyDeskResult['forwarded']) && $agencyDeskResult['forwarded'] && isset($agencyDeskResult['response']['id'])) {
-            $connection->update(
-                'tx_t3clickmark_domain_model_feedback',
-                ['external_id' => (string)$agencyDeskResult['response']['id']],
-                ['uid' => $feedbackUid]
-            );
+        // Track delivery state (outbox). null = AgencyDesk not configured → stays 'pending'.
+        if ($agencyDeskResult !== null) {
+            $now = time();
+            if (!empty($agencyDeskResult['forwarded']) && isset($agencyDeskResult['response']['id'])) {
+                $connection->update(
+                    'tx_t3clickmark_domain_model_feedback',
+                    [
+                        'external_id' => (string)$agencyDeskResult['response']['id'],
+                        'forward_status' => 'sent',
+                        'forward_attempts' => 1,
+                        'forward_last_attempt' => $now,
+                    ],
+                    ['uid' => $feedbackUid]
+                );
+            } else {
+                // Delivery failed (e.g. platform down) — the scheduler/banner will retry.
+                $error = (string)($agencyDeskResult['error'] ?? ('HTTP ' . ($agencyDeskResult['statusCode'] ?? '?')));
+                $connection->update(
+                    'tx_t3clickmark_domain_model_feedback',
+                    [
+                        'forward_status' => 'failed',
+                        'forward_attempts' => 1,
+                        'forward_last_error' => substr($error, 0, 2000),
+                        'forward_last_attempt' => $now,
+                    ],
+                    ['uid' => $feedbackUid]
+                );
+            }
         }
 
         // Clean up temp files
