@@ -29,6 +29,11 @@ class OAuthCallbackController
             return $this->buildPopupResponse(false, 'Missing authorization code.');
         }
 
+        // The redirect_uri must match exactly the one used when the code was
+        // issued (the platform validates it in ConsumeCode). It is the same
+        // callback URL the "Connect" button was rendered with.
+        $redirectUri = GeneralUtility::getIndpEnv('TYPO3_SITE_URL') . '?eID=t3clickmark_oauth_callback';
+
         // Exchange authorization code for API key
         try {
             $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
@@ -44,6 +49,7 @@ class OAuthCallbackController
                         'code' => $code,
                         'state' => $state,
                         'client_id' => 't3clickmark',
+                        'redirect_uri' => $redirectUri,
                     ]),
                 ]
             );

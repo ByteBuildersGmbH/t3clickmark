@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace ByteBuilders\T3ClickMark\Controller;
 
 use ByteBuilders\T3ClickMark\Configuration\AccessControl;
+use ByteBuilders\T3ClickMark\Configuration\PlatformEndpoint;
 use ByteBuilders\T3ClickMark\Domain\Model\Feedback;
 use ByteBuilders\T3ClickMark\Domain\Model\FeedbackComment;
 use ByteBuilders\T3ClickMark\Domain\Repository\FeedbackRepository;
@@ -88,6 +89,7 @@ class FeedbackController extends ActionController
             'isConnected' => $isConnected,
             'dashboardUrl' => $connectionService->getDashboardUrl(),
             'callbackUrl' => $callbackUrl,
+            'platformUrl' => PlatformEndpoint::getPlatformUrl(),
         ]);
 
         return $moduleTemplate->renderResponse('Feedback/List');

@@ -12,7 +12,7 @@
     }
 
     connectBtn.addEventListener('click', function () {
-        var platformUrl = connectBtn.getAttribute('data-t3cm-platform-url') || 'https://clickmark.bytebuilders.de';
+        var platformUrl = connectBtn.getAttribute('data-t3cm-platform-url') || 'https://app.clickmark.it';
         var callbackUrl = connectBtn.getAttribute('data-t3cm-callback-url') || '';
         var csrfToken = Math.random().toString(36).substring(2, 15);
 
@@ -21,16 +21,9 @@
             + '&redirect_uri=' + encodeURIComponent(callbackUrl)
             + '&state=' + encodeURIComponent(csrfToken);
 
-        var width = 600;
-        var height = 700;
-        var left = Math.round((screen.width - width) / 2);
-        var top = Math.round((screen.height - height) / 2);
-
-        window.open(
-            onboardUrl,
-            'clickmark_connect',
-            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes'
-        );
+        // Open the onboarding/connect flow in a full browser tab (not a small
+        // popup) so there is room for the value pitch and project selection.
+        window.open(onboardUrl, '_blank');
     });
 
     // Listen for postMessage from the OAuth callback popup
@@ -39,6 +32,9 @@
             if (event.data.success) {
                 // Reload the module page to reflect the connected state
                 window.location.reload();
+            } else {
+                // Surface the failure instead of closing silently.
+                window.alert('ClickMark connection failed: ' + (event.data.error || 'unknown error'));
             }
         }
     });

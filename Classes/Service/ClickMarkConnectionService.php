@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\Service;
 
+use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Registry;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Manages the connection state between this TYPO3 instance and ClickMark AgencyDesk.
- * Connection data (API key, project ID, dashboard URL) is stored in the TYPO3 Registry.
+ * The interactive OAuth flow stores its connection (API key, project ID, dashboard
+ * URL) in the TYPO3 Registry. A manually configured key in the Extension
+ * Configuration (legacy) is honoured as a fallback so both paths report the same
+ * connection state and resolve to the same key.
  */
 class ClickMarkConnectionService
 {
@@ -20,9 +24,24 @@ class ClickMarkConnectionService
         return $this->getApiKey() !== '';
     }
 
+    /**
+     * Returns the API key used to talk to the platform: the OAuth-connected key
+     * (Registry) takes precedence; a manually configured Extension Configuration
+     * key is the legacy fallback.
+     */
     public function getApiKey(): string
     {
-        return (string)$this->getRegistry()->get(self::REGISTRY_NAMESPACE, 'connected_api_key', '');
+        $key = (string)$this->getRegistry()->get(self::REGISTRY_NAMESPACE, 'connected_api_key', '');
+        if ($key !== '') {
+            return $key;
+        }
+
+        try {
+            return trim((string)GeneralUtility::makeInstance(ExtensionConfiguration::class)
+                ->get('t3clickmark', 'apiKey'));
+        } catch (\Throwable $e) {
+            return '';
+        }
     }
 
     public function getProjectId(): int
