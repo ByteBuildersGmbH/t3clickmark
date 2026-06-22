@@ -79,6 +79,23 @@ class FeedbackController extends ActionController
         // "finish setting up your account" nudge. Fail-soft: null = unknown.
         $setupStatus = $isConnected ? $this->fetchPlatformStatus($connectionService->getApiKey()) : null;
 
+        // "Finish setup" target with the connected site + project names so the
+        // dashboard onboarding can name them accurately.
+        $dashboardUrl = $connectionService->getDashboardUrl();
+        $setupUrl = rtrim($dashboardUrl, '/') . '/onboarding';
+        if (is_array($setupStatus)) {
+            $q = [];
+            if (!empty($setupStatus['instance_name'])) {
+                $q['site'] = $setupStatus['instance_name'];
+            }
+            if (!empty($setupStatus['project_name'])) {
+                $q['project'] = $setupStatus['project_name'];
+            }
+            if ($q !== []) {
+                $setupUrl .= '?' . http_build_query($q);
+            }
+        }
+
         // Outbox: how many feedback items failed to reach the platform?
         $pendingDeliveryCount = $this->countFailedDeliveries();
 
@@ -92,7 +109,8 @@ class FeedbackController extends ActionController
             'statusOptions' => ['' => 'All Statuses', 'open' => 'Open', 'in_progress' => 'In Progress', 'resolved' => 'Resolved', 'closed' => 'Closed'],
             'priorityOptions' => ['' => 'All Priorities', 'low' => 'Low', 'medium' => 'Medium', 'high' => 'High'],
             'isConnected' => $isConnected,
-            'dashboardUrl' => $connectionService->getDashboardUrl(),
+            'dashboardUrl' => $dashboardUrl,
+            'setupUrl' => $setupUrl,
             'callbackUrl' => $callbackUrl,
             'platformUrl' => PlatformEndpoint::getPlatformUrl(),
             // Setup-status nudge (null when unknown / not connected)

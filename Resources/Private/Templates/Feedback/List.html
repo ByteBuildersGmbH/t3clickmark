@@ -12,7 +12,7 @@
         <div class="t3cm-accent-strip"></div>
 
         <!-- Connection banner -->
-        <f:render partial="Feedback/ConnectionBanner" arguments="{isConnected: isConnected, dashboardUrl: dashboardUrl, callbackUrl: callbackUrl, platformUrl: platformUrl, statusKnown: statusKnown, setupComplete: setupComplete}" />
+        <f:render partial="Feedback/ConnectionBanner" arguments="{isConnected: isConnected, dashboardUrl: dashboardUrl, setupUrl: setupUrl, callbackUrl: callbackUrl, platformUrl: platformUrl, statusKnown: statusKnown, setupComplete: setupComplete}" />
 
         <!-- Outbox warning: feedback that failed to reach the platform -->
         <f:if condition="{pendingDeliveryCount} > 0">
