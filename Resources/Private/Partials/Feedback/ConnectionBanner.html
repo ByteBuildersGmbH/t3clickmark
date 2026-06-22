@@ -5,7 +5,7 @@
     <f:then>
         <f:comment><!-- Fluid has no "!" operator → nest the checks. setupStatus
         truthy = status known; setupComplete decides nudge vs. subtle. --></f:comment>
-        <f:if condition="{setupStatus}">
+        <f:if condition="{statusKnown}">
             <f:then>
                 <f:if condition="{setupComplete}">
                     <f:then>
@@ -39,7 +39,7 @@
                                 </p>
                             </div>
                             <f:if condition="{dashboardUrl}">
-                                <a href="{dashboardUrl}/settings/integrations" target="_blank" rel="noopener" class="t3cm-conn-btn t3cm-conn-btn--primary">
+                                <a href="{dashboardUrl}/onboarding" target="_blank" rel="noopener" class="t3cm-conn-btn t3cm-conn-btn--primary">
                                     Jetzt einrichten &rarr;
                                 </a>
                             </f:if>

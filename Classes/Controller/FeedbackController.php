@@ -96,6 +96,7 @@ class FeedbackController extends ActionController
             'callbackUrl' => $callbackUrl,
             'platformUrl' => PlatformEndpoint::getPlatformUrl(),
             // Setup-status nudge (null when unknown / not connected)
+            'statusKnown' => is_array($setupStatus),
             'setupStatus' => $setupStatus,
             'setupComplete' => is_array($setupStatus) ? (bool)($setupStatus['setup_complete'] ?? false) : null,
             'hasConnector' => is_array($setupStatus) ? (bool)($setupStatus['has_connector'] ?? false) : null,

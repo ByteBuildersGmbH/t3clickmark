@@ -12,7 +12,7 @@
         <div class="t3cm-accent-strip"></div>
 
         <!-- Connection banner -->
-        <f:render partial="Feedback/ConnectionBanner" arguments="{isConnected: isConnected, dashboardUrl: dashboardUrl, callbackUrl: callbackUrl}" />
+        <f:render partial="Feedback/ConnectionBanner" arguments="{isConnected: isConnected, dashboardUrl: dashboardUrl, callbackUrl: callbackUrl, platformUrl: platformUrl, statusKnown: statusKnown, setupComplete: setupComplete}" />
 
         <!-- Outbox warning: feedback that failed to reach the platform -->
         <f:if condition="{pendingDeliveryCount} > 0">
@@ -56,7 +56,7 @@
                 </div>
                 <div class="t3cm-header-right">
                     <f:link.action action="create" class="btn btn-sm btn-primary t3cm-btn-new-feedback">+ New Feedback</f:link.action>
-                    <span class="t3cm-version-badge" id="t3cm-version-badge">v0.3.52</span>
+                    <span class="t3cm-version-badge" id="t3cm-version-badge">v0.3.53</span>
                 </div>
             </div>
 
