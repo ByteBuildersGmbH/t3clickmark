@@ -3,38 +3,68 @@
 
 <f:if condition="{isConnected}">
     <f:then>
-        <!-- Connected state: subtle badge with dashboard link -->
-        <div class="t3cm-connection-banner t3cm-connection-banner--connected">
-            <span class="t3cm-connection-status">
-                <svg class="t3cm-connection-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                Connected to ClickMark
-            </span>
-            <f:if condition="{dashboardUrl}">
-                <a href="{dashboardUrl}" target="_blank" rel="noopener" class="t3cm-connection-link">
-                    Manage in dashboard &rarr;
-                </a>
-            </f:if>
-        </div>
+        <f:if condition="{setupStatus} && !{setupComplete}">
+            <f:then>
+                <!-- Connected, but setup incomplete: prominent nudge to finish. -->
+                <div class="t3cm-conn t3cm-conn--warn">
+                    <div class="t3cm-conn-body">
+                        <div class="t3cm-conn-title">
+                            <svg class="t3cm-conn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                            Verbunden – aber noch nicht fertig eingerichtet
+                        </div>
+                        <p class="t3cm-conn-text">
+                            Damit Kundenfeedback auch ankommt, richte noch eine Benachrichtigung ein
+                            (z.&nbsp;B. Slack oder Teams). Das dauert nur eine Minute.
+                        </p>
+                    </div>
+                    <f:if condition="{dashboardUrl}">
+                        <a href="{dashboardUrl}/settings/integrations" target="_blank" rel="noopener" class="t3cm-conn-btn t3cm-conn-btn--primary">
+                            Jetzt einrichten &rarr;
+                        </a>
+                    </f:if>
+                </div>
+            </f:then>
+            <f:else>
+                <!-- Connected and fully set up: subtle confirmation. -->
+                <div class="t3cm-conn t3cm-conn--ok">
+                    <span class="t3cm-conn-badge">
+                        <svg class="t3cm-conn-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Mit ClickMark verbunden
+                    </span>
+                    <f:if condition="{dashboardUrl}">
+                        <a href="{dashboardUrl}" target="_blank" rel="noopener" class="t3cm-conn-link">Dashboard &rarr;</a>
+                    </f:if>
+                </div>
+            </f:else>
+        </f:if>
     </f:then>
     <f:else>
-        <!-- Not connected state: info banner with connect button -->
-        <div class="t3cm-connection-banner t3cm-connection-banner--disconnected">
-            <div class="t3cm-connection-info">
-                <svg class="t3cm-connection-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="16" x2="12" y2="12"/>
-                    <line x1="12" y1="8" x2="12.01" y2="8"/>
-                </svg>
-                <span>Connect to ClickMark to sync feedback to Jira, notify on Slack, and manage projects from the AgencyDesk dashboard.</span>
+        <!-- Not connected: prominent call to action. -->
+        <div class="t3cm-conn t3cm-conn--cta">
+            <div class="t3cm-conn-body">
+                <div class="t3cm-conn-title">
+                    <svg class="t3cm-conn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                    </svg>
+                    Mit ClickMark AgencyDesk verbinden
+                </div>
+                <p class="t3cm-conn-text">
+                    Verbinde diese Website, um Feedback an Jira, Slack oder Teams zu leiten
+                    und alle Projekte zentral im Dashboard zu verwalten.
+                </p>
             </div>
             <button type="button"
-                    class="btn btn-sm btn-primary t3cm-btn-connect"
+                    class="t3cm-conn-btn t3cm-conn-btn--primary"
                     id="t3cm-btn-connect"
                     data-t3cm-platform-url="{platformUrl}"
                     data-t3cm-callback-url="{callbackUrl}">
-                Connect to ClickMark
+                Verbinden
             </button>
         </div>
     </f:else>

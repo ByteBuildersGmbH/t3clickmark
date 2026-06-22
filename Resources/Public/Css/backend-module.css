@@ -1812,3 +1812,88 @@ a.t3cm-dense-row:hover,
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ── Connection banner (account setup states) ──────────────── */
+.t3cm-conn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.t3cm-conn--cta,
+.t3cm-conn--warn {
+    margin-bottom: 20px;
+    padding: 16px 20px;
+    border: 1px solid var(--t3cm-border-strong);
+    border-left: 4px solid var(--t3cm-brand-orange);
+    border-radius: 10px;
+    background: var(--t3cm-bg-subtle);
+    box-shadow: var(--t3cm-shadow-sm);
+}
+.t3cm-conn--warn {
+    border-left-color: var(--t3cm-brand-blue);
+}
+.t3cm-conn--ok {
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--t3cm-text-muted);
+}
+.t3cm-conn-body {
+    flex: 1 1 auto;
+    min-width: 240px;
+}
+.t3cm-conn-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--t3cm-text);
+}
+.t3cm-conn-text {
+    margin: 6px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--t3cm-text-muted);
+    max-width: 640px;
+}
+.t3cm-conn-btn {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+.t3cm-conn-btn--primary {
+    background: var(--t3cm-brand-orange);
+    color: #fff;
+}
+.t3cm-conn-btn--primary:hover {
+    opacity: 0.9;
+    color: #fff;
+}
+.t3cm-conn-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--t3cm-text-muted);
+}
+.t3cm-conn-link {
+    margin-left: 12px;
+    color: var(--t3cm-brand-blue);
+    text-decoration: none;
+}
+.t3cm-conn-link:hover {
+    text-decoration: underline;
+}
+.t3cm-conn-icon {
+    flex: 0 0 auto;
+}

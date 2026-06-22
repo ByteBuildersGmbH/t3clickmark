@@ -6,6 +6,7 @@ namespace ByteBuilders\T3ClickMark\Controller;
 
 use ByteBuilders\T3ClickMark\Configuration\AccessControl;
 use ByteBuilders\T3ClickMark\Configuration\PlatformEndpoint;
+use TYPO3\CMS\Core\Http\RequestFactory;
 use ByteBuilders\T3ClickMark\Domain\Model\Feedback;
 use ByteBuilders\T3ClickMark\Domain\Model\FeedbackComment;
 use ByteBuilders\T3ClickMark\Domain\Repository\FeedbackRepository;
@@ -74,6 +75,10 @@ class FeedbackController extends ActionController
         $isConnected = $connectionService->isConnected();
         $callbackUrl = GeneralUtility::getIndpEnv('TYPO3_SITE_URL') . '?eID=t3clickmark_oauth_callback';
 
+        // Setup status from the platform (only when connected): drives the
+        // "finish setting up your account" nudge. Fail-soft: null = unknown.
+        $setupStatus = $isConnected ? $this->fetchPlatformStatus($connectionService->getApiKey()) : null;
+
         // Outbox: how many feedback items failed to reach the platform?
         $pendingDeliveryCount = $this->countFailedDeliveries();
 
@@ -90,6 +95,12 @@ class FeedbackController extends ActionController
             'dashboardUrl' => $connectionService->getDashboardUrl(),
             'callbackUrl' => $callbackUrl,
             'platformUrl' => PlatformEndpoint::getPlatformUrl(),
+            // Setup-status nudge (null when unknown / not connected)
+            'setupStatus' => $setupStatus,
+            'setupComplete' => is_array($setupStatus) ? (bool)($setupStatus['setup_complete'] ?? false) : null,
+            'hasConnector' => is_array($setupStatus) ? (bool)($setupStatus['has_connector'] ?? false) : null,
+            'statusPlan' => is_array($setupStatus) ? (string)($setupStatus['plan'] ?? '') : '',
+            'trialDaysRemaining' => is_array($setupStatus) ? ($setupStatus['trial_days_remaining'] ?? null) : null,
         ]);
 
         return $moduleTemplate->renderResponse('Feedback/List');
@@ -122,6 +133,34 @@ class FeedbackController extends ActionController
         );
 
         return $this->redirect('list');
+    }
+
+    /**
+     * Fetch the account setup status from the platform (API-key auth). Fail-soft:
+     * returns null on any error so the backend module never breaks.
+     */
+    protected function fetchPlatformStatus(string $apiKey): ?array
+    {
+        if ($apiKey === '') {
+            return null;
+        }
+        try {
+            $response = GeneralUtility::makeInstance(RequestFactory::class)->request(
+                PlatformEndpoint::getApiEndpoint() . '/status',
+                'GET',
+                [
+                    'headers' => ['X-API-Key' => $apiKey, 'Accept' => 'application/json'],
+                    'timeout' => 4,
+                ]
+            );
+            if ($response->getStatusCode() !== 200) {
+                return null;
+            }
+            $data = json_decode((string)$response->getBody(), true);
+            return is_array($data) ? $data : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     /**
