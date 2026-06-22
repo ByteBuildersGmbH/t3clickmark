@@ -93,30 +93,36 @@ class OAuthCallbackController
 
         if ($success) {
             $body = '<h2 style="margin:0 0 8px;color:#0f172a">Verbunden &#10003;</h2>'
-                . '<p style="margin:0 0 16px;color:#475569">ClickMark ist mit TYPO3 verbunden. Du kannst dieses Fenster schließen und ins TYPO3-Backend zurückkehren.</p>';
+                . '<p style="margin:0 0 20px;color:#475569">ClickMark ist mit TYPO3 verbunden. Richte als Nächstes deine Benachrichtigungen ein.</p>';
             if ($dashboardUrl !== '') {
-                $safeDash = htmlspecialchars($dashboardUrl, ENT_QUOTES);
-                $body .= '<p style="margin:0 0 16px"><a href="' . $safeDash . '" style="color:#1b7894">Zum ClickMark-Dashboard</a></p>';
+                $setupUrl = htmlspecialchars(rtrim($dashboardUrl, '/') . '/onboarding', ENT_QUOTES);
+                $body .= '<a href="' . $setupUrl . '" style="display:inline-block;background:#fc5130;color:#fff;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:600;text-decoration:none">Weiter zum Setup &rarr;</a>';
             }
+            $body .= '<p style="margin:18px 0 0;color:#94a3b8;font-size:13px">Oder schließe dieses Fenster und kehre ins TYPO3-Backend zurück.</p>';
         } else {
             $safeError = htmlspecialchars($error !== '' ? $error : 'Bitte erneut versuchen.', ENT_QUOTES);
             $body = '<h2 style="margin:0 0 8px;color:#dc2626">Verbindung fehlgeschlagen</h2>'
-                . '<p style="margin:0 0 16px;color:#475569">' . $safeError . '</p>';
+                . '<p style="margin:0;color:#475569">' . $safeError . '</p>';
         }
 
+        // The close button + window.close() only work for a script-opened popup
+        // (password/session flow). A magic-link tab opened from an email has no
+        // opener and cannot self-close, so we don't show a dead "close" button
+        // there — the "Weiter zum Setup" link is the way forward.
         $html = <<<HTML
 <!DOCTYPE html>
 <html lang="de">
 <head><meta charset="utf-8"><title>ClickMark</title></head>
 <body style="font-family:system-ui,-apple-system,sans-serif;max-width:520px;margin:64px auto;padding:0 24px;text-align:center">
 {$body}
-<button onclick="window.close()" style="border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:8px 16px;font-size:14px;cursor:pointer;color:#0f172a">Fenster schließen</button>
 <script>
 (function() {
-    try { if (window.opener) { window.opener.postMessage({$payload}, '*'); } } catch (e) {}
-    // Popups (window.open) close automatically; a standalone tab keeps the
-    // message above visible.
-    window.close();
+    try {
+        if (window.opener) {
+            window.opener.postMessage({$payload}, '*');
+            window.close();
+        }
+    } catch (e) {}
 })();
 </script>
 </body>
