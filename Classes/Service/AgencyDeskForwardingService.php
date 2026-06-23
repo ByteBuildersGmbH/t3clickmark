@@ -14,8 +14,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * Used by FeedbackApiController (widget submissions), FeedbackController (BE form),
  * and DataHandler hook (record_edit).
  *
- * The target URL is resolved via PlatformEndpoint::getApiEndpoint() and can
- * be overridden via Extension Configuration (t3clickmark > apiEndpoint).
+ * The target URL is resolved via PlatformEndpoint::getApiEndpoint() (default
+ * https://app.clickmark.it/api/v1); only the Pro extension may override it
+ * (t3clickmark_pro > apiEndpoint).
  */
 class AgencyDeskForwardingService
 {

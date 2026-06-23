@@ -15,8 +15,9 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * Syncs feedback statuses and comments from AgencyDesk back into TYPO3.
  * Called on backend module load to keep local records up-to-date.
  *
- * The source URL is resolved via PlatformEndpoint::getApiEndpoint() and can
- * be overridden via Extension Configuration (t3clickmark > apiEndpoint).
+ * The source URL is resolved via PlatformEndpoint::getApiEndpoint() (default
+ * https://app.clickmark.it/api/v1); only the Pro extension may override it
+ * (t3clickmark_pro > apiEndpoint).
  */
 class AgencyDeskSyncService
 {
