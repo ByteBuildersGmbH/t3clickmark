@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use ByteBuilders\T3ClickMark\Configuration\AccessControl;
 use ByteBuilders\T3ClickMark\Service\AgencyDeskForwardingService;
+use ByteBuilders\T3ClickMark\Service\PlatformFeatureService;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
@@ -40,6 +41,18 @@ class FeedbackApiController
         $title = trim($parsedBody['title'] ?? '');
         if ($title === '') {
             return new JsonResponse(['error' => 'Title is required'], 400);
+        }
+
+        // Video capture is a paid platform feature. Reject early — before any
+        // record or file is stored — with a clear error instead of letting the
+        // platform bounce the forward later (never silently dropped).
+        if (!empty($uploadedFiles['videoRecording'])
+            && !GeneralUtility::makeInstance(PlatformFeatureService::class)->isPremiumUnlocked()
+        ) {
+            return new JsonResponse([
+                'error' => 'feature_not_available',
+                'message' => 'Video-Aufnahme ist ab dem Agency-Tarif verfügbar.',
+            ], 402);
         }
 
         // Save screenshot to temp file BEFORE FAL consumes it.

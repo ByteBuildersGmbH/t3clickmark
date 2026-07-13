@@ -11,6 +11,7 @@ use ByteBuilders\T3ClickMark\Domain\Model\Feedback;
 use ByteBuilders\T3ClickMark\Domain\Model\FeedbackComment;
 use ByteBuilders\T3ClickMark\Domain\Repository\FeedbackRepository;
 use ByteBuilders\T3ClickMark\Service\AgencyDeskForwardingService;
+use ByteBuilders\T3ClickMark\Service\PlatformFeatureService;
 use ByteBuilders\T3ClickMark\Service\AgencyDeskSyncService;
 use ByteBuilders\T3ClickMark\Service\ClickMarkConnectionService;
 use Psr\Http\Message\ResponseInterface;
@@ -176,7 +177,12 @@ class FeedbackController extends ActionController
                 return null;
             }
             $data = json_decode((string)$response->getBody(), true);
-            return is_array($data) ? $data : null;
+            if (is_array($data)) {
+                // Warm the Registry-cached premium flag for the frontend widget.
+                GeneralUtility::makeInstance(PlatformFeatureService::class)->updateFromStatusResponse($data);
+                return $data;
+            }
+            return null;
         } catch (\Throwable $e) {
             return null;
         }

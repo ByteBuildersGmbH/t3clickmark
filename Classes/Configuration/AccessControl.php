@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ByteBuilders\T3ClickMark\Configuration;
 
+use ByteBuilders\T3ClickMark\Service\PlatformFeatureService;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
@@ -28,11 +29,17 @@ class AccessControl
      * Returns true when the widget should be injected for every frontend
      * visitor, regardless of backend authentication.
      *
-     * Only Pro installs can enable this. Free installs always return false.
+     * Requires BOTH the Pro extension setting AND the platform plan (the plan
+     * is the paywall — installing Pro without an eligible plan unlocks
+     * nothing). Free installs always return false.
      */
     public static function isPublicWidgetEnabled(): bool
     {
-        return (bool) self::readProConfig('publicWidget', false);
+        if (!(bool) self::readProConfig('publicWidget', false)) {
+            return false;
+        }
+
+        return GeneralUtility::makeInstance(PlatformFeatureService::class)->isPremiumUnlocked();
     }
 
     /**

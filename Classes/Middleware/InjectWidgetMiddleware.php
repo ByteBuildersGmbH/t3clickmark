@@ -6,6 +6,7 @@ namespace ByteBuilders\T3ClickMark\Middleware;
 
 use ByteBuilders\T3ClickMark\Configuration\AccessControl;
 use ByteBuilders\T3ClickMark\Service\CrossDomainTokenService;
+use ByteBuilders\T3ClickMark\Service\PlatformFeatureService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -218,6 +219,10 @@ class InjectWidgetMiddleware implements MiddlewareInterface
             'backendUserId' => $backendUserId,
             'submissionToken' => $this->generateSubmissionToken($backendUserId),
             'backendBaseUrl' => $backendBaseUrl,
+            // Mirrors the org's platform plan (Registry-cached, no request per
+            // page view). The widget hides paid capture modes when false — the
+            // platform additionally enforces it server-side on upload.
+            'premiumFeatures' => GeneralUtility::makeInstance(PlatformFeatureService::class)->isPremiumUnlocked(),
         ];
     }
 
