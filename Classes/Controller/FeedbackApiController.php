@@ -134,12 +134,13 @@ class FeedbackApiController
             $attachmentCount++;
         }
 
-        // Handle video recording upload (Pro feature — WebM, max 50 MB)
+        // Handle video recording upload (Pro feature — MP4 or WebM, max 50 MB)
         $videoTempPath = null;
         if (!empty($uploadedFiles['videoRecording'])) {
             $videoFile = $uploadedFiles['videoRecording'];
             if ($videoFile->getSize() > 0 && $videoFile->getSize() <= 50 * 1024 * 1024) {
-                $videoTempPath = GeneralUtility::tempnam('t3cm_vid_') . '.webm';
+                $videoExt = strtolower(pathinfo($videoFile->getClientFilename() ?? 'recording.webm', PATHINFO_EXTENSION)) === 'mp4' ? '.mp4' : '.webm';
+                $videoTempPath = GeneralUtility::tempnam('t3cm_vid_') . $videoExt;
                 $stream = $videoFile->getStream();
                 $stream->rewind();
                 file_put_contents($videoTempPath, $stream->getContents());
