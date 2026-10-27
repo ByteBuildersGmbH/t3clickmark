@@ -23,6 +23,15 @@ class AgencyDeskSyncService
 {
     private const REGISTRY_NAMESPACE = 'tx_t3clickmark';
     private const REGISTRY_KEY = 'last_sync_timestamp';
+    // Cursor for updated_since, kept SEPARATE from the rate limiter above: it is
+    // the highest updated_at the platform actually returned (server time), not
+    // the local run time. A missing cursor means "never fully synced" and
+    // triggers one full pull without a time filter — a run-time based cursor
+    // used to skip every change older than its window for good.
+    private const REGISTRY_KEY_CURSOR = 'sync_cursor';
+    // Re-fetch this much overlap below the cursor; applying updates is
+    // idempotent, and the overlap closes same-second and clock-skew gaps.
+    private const CURSOR_OVERLAP = 60;
     private const MIN_SYNC_INTERVAL = 60; // seconds — don't sync more than once per minute
 
     public const RESULT_OK = 'ok';
@@ -61,14 +70,16 @@ class AgencyDeskSyncService
             return ['result' => self::RESULT_RATE_LIMITED, 'updated' => 0, 'error' => ''];
         }
 
-        $lastSyncIso = $lastSync > 0
-            ? date('c', $lastSync)
-            : date('c', strtotime('-1 day'));
+        $cursor = (string)$registry->get(self::REGISTRY_NAMESPACE, self::REGISTRY_KEY_CURSOR, '');
+        $url = PlatformEndpoint::getApiEndpoint() . '/feedback';
+        if ($cursor !== '') {
+            $url .= '?updated_since=' . urlencode($cursor);
+        }
 
         try {
             $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
             $response = $requestFactory->request(
-                PlatformEndpoint::getApiEndpoint() . '/feedback?updated_since=' . urlencode($lastSyncIso),
+                $url,
                 'GET',
                 [
                     'headers' => ['X-API-Key' => $apiKey],
@@ -88,7 +99,23 @@ class AgencyDeskSyncService
 
             $count = $this->applyUpdates($apiKey, $remoteFeedbacks);
 
-            // Update last sync timestamp
+            // Advance the cursor to the highest updated_at the platform returned
+            // (minus overlap). No items → cursor stays where it was.
+            $maxUpdated = 0;
+            foreach ($remoteFeedbacks as $remote) {
+                $u = isset($remote['updated_at']) ? (int)strtotime((string)$remote['updated_at']) : 0;
+                if ($u > $maxUpdated) {
+                    $maxUpdated = $u;
+                }
+            }
+            if ($maxUpdated > 0) {
+                $registry->set(
+                    self::REGISTRY_NAMESPACE,
+                    self::REGISTRY_KEY_CURSOR,
+                    gmdate('Y-m-d\TH:i:s\Z', $maxUpdated - self::CURSOR_OVERLAP)
+                );
+            }
+            // Rate limiter (local run time), independent of the cursor.
             $registry->set(self::REGISTRY_NAMESPACE, self::REGISTRY_KEY, time());
 
             return ['result' => self::RESULT_OK, 'updated' => $count, 'error' => ''];
