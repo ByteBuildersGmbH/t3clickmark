@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace ByteBuilders\T3ClickMark\Service;
 
 use ByteBuilders\T3ClickMark\Configuration\PlatformEndpoint;
-use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Registry;
@@ -329,13 +328,11 @@ class AgencyDeskSyncService
 
     private function getApiKey(): ?string
     {
-        try {
-            $extConf = GeneralUtility::makeInstance(ExtensionConfiguration::class);
-            $apiKey = trim((string)$extConf->get('t3clickmark', 'apiKey'));
-        } catch (\Exception $e) {
-            return null;
-        }
-
+        // Same source as forwarding (ClickMarkConnectionService): OAuth-connected
+        // key from the Registry first, legacy Extension Configuration key as
+        // fallback. Reading only the Extension Configuration here left the pull
+        // sync keyless (silent 401) on instances connected via the OAuth flow.
+        $apiKey = GeneralUtility::makeInstance(ClickMarkConnectionService::class)->getApiKey();
         return $apiKey !== '' ? $apiKey : null;
     }
 }
