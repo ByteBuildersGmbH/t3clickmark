@@ -14,10 +14,12 @@ use ByteBuilders\T3ClickMark\Service\AgencyDeskForwardingService;
 use ByteBuilders\T3ClickMark\Service\PlatformFeatureService;
 use ByteBuilders\T3ClickMark\Service\AgencyDeskSyncService;
 use ByteBuilders\T3ClickMark\Service\ClickMarkConnectionService;
+use ByteBuilders\T3ClickMark\Service\ScopedViewService;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use TYPO3\CMS\Backend\Attribute\AsController;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
+use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -36,13 +38,13 @@ class FeedbackController extends ActionController
 
     /**
      * Authorize every backend module request: deny access when the
-     * current backend user is not on the allowedBackendUsers list (Pro)
-     * or lacks the t3clickmark module permission (free default).
+     * current backend user is not on the allowedBackendUsers list
+     * or lacks the t3clickmark module permission (default).
      *
      * Without this check the module would be reachable for every
      * authenticated backend user, because TYPO3's "access => user"
      * setting in Configuration/Backend/Modules.php cannot read our
-     * custom Pro-gated configuration.
+     * custom allowedBackendUsers configuration.
      */
     protected function initializeAction(): void
     {
@@ -69,7 +71,14 @@ class FeedbackController extends ActionController
 
         $moduleTemplate = $this->moduleTemplateFactory->create($this->request);
 
-        $feedbacks = $this->feedbackRepository->findFiltered($status, $priority);
+        // Scoped view: admins see everything (null), non-admins only feedback
+        // on pages inside their web mounts.
+        $backendUser = $GLOBALS['BE_USER'] ?? null;
+        $scopePageUids = $backendUser instanceof BackendUserAuthentication
+            ? GeneralUtility::makeInstance(ScopedViewService::class)->getAccessiblePageIds($backendUser)
+            : [];
+
+        $feedbacks = $this->feedbackRepository->findFiltered($status, $priority, $scopePageUids);
 
         // Connection state for the ConnectionBanner partial
         $connectionService = GeneralUtility::makeInstance(ClickMarkConnectionService::class);
@@ -104,7 +113,7 @@ class FeedbackController extends ActionController
             'pendingDeliveryCount' => $pendingDeliveryCount,
             'feedbacks' => $feedbacks,
             'totalCount' => $feedbacks->count(),
-            'statusCounts' => $this->feedbackRepository->countByStatus(),
+            'statusCounts' => $this->feedbackRepository->countByStatus($scopePageUids),
             'currentStatus' => $status,
             'currentPriority' => $priority,
             'statusOptions' => ['' => 'All Statuses', 'open' => 'Open', 'in_progress' => 'In Progress', 'resolved' => 'Resolved', 'closed' => 'Closed'],

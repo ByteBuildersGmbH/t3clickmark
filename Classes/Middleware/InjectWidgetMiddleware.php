@@ -118,7 +118,7 @@ class InjectWidgetMiddleware implements MiddlewareInterface
      */
     private function resolveBackendUser(ServerRequestInterface $request): ?array
     {
-        // Public mode (Pro feature): inject widget for everyone, no backend user needed
+        // Public mode (extension setting + platform plan): inject widget for everyone, no backend user needed
         if (AccessControl::isPublicWidgetEnabled()) {
             return ['uid' => 0, 'username' => ''];
         }

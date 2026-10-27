@@ -10,7 +10,7 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 
 /**
  * Extends TYPO3's standard backend ModuleProvider with the ClickMark
- * Pro allow-list. When the Pro allowedBackendUsers list is configured,
+ * allow-list. When the allowedBackendUsers list is configured,
  * the t3clickmark module is hidden from the backend menu for any user
  * who is not on the list (admins included).
  *
@@ -33,7 +33,7 @@ class AccessControlledModuleProvider extends ModuleProvider
             return false;
         }
 
-        // Then layer the Pro allow-list on top, but only for our own module.
+        // Then layer the allow-list on top, but only for our own module.
         if ($identifier === 't3clickmark') {
             return AccessControl::hasBackendUserAccess($user);
         }

@@ -134,7 +134,7 @@ class FeedbackApiController
             $attachmentCount++;
         }
 
-        // Handle video recording upload (Pro feature — MP4 or WebM, max 50 MB)
+        // Handle video recording upload (platform-plan feature — MP4 or WebM, max 50 MB)
         $videoTempPath = null;
         if (!empty($uploadedFiles['videoRecording'])) {
             $videoFile = $uploadedFiles['videoRecording'];
@@ -219,7 +219,7 @@ class FeedbackApiController
             return false;
         }
 
-        // In public mode (Pro feature), accept backendUserId = 0
+        // In public mode, accept backendUserId = 0
         if ($backendUserId <= 0 && !AccessControl::isPublicWidgetEnabled()) {
             return false;
         }

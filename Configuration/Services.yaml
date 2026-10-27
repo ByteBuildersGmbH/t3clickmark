@@ -17,7 +17,7 @@ services:
         identifier: 't3clickmark/docheader-feedback-button'
         event: TYPO3\CMS\Backend\Template\Components\ModifyButtonBarEvent
 
-  # Decorate the default backend ModuleProvider so the Pro allow-list also
+  # Decorate the default backend ModuleProvider so the allowedBackendUsers list also
   # filters the module menu, not only the controller-level access check.
   ByteBuilders\T3ClickMark\Backend\AccessControlledModuleProvider:
     decorates: TYPO3\CMS\Backend\Module\ModuleProvider

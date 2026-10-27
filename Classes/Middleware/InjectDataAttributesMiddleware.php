@@ -89,7 +89,7 @@ class InjectDataAttributesMiddleware implements MiddlewareInterface
      */
     private function hasClickMarkAccess(ServerRequestInterface $request): bool
     {
-        // Public mode (Pro feature): always grant access regardless of backend user
+        // Public mode (extension setting + platform plan): always grant access regardless of backend user
         if (AccessControl::isPublicWidgetEnabled()) {
             return true;
         }

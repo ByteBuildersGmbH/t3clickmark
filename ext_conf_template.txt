@@ -1,2 +1,8 @@
 # cat=agencydesk; type=string; label=AgencyDesk API Key:64-character API key from your AgencyDesk project. Leave empty for local-only mode.
 apiKey =
+
+# cat=access/user/20; type=string; label=Allowed Backend Users (leave empty for all):Comma-separated list of backend usernames that may use ClickMark (module, widget, context menu, DocHeader button). Leave empty to fall back to standard TYPO3 behaviour (admins always allowed, editors via t3clickmark module permission). When you fill the list, the whitelist is strict — admins who are NOT on the list lose access too. Make sure to include yourself!
+allowedBackendUsers =
+
+# cat=access/user/30; type=boolean; label=Public Widget (no login required):If enabled, the ClickMark widget is injected on all frontend pages regardless of backend user login. Anyone can submit feedback. Only takes effect with an eligible ClickMark plan. Leave off for agency/internal use.
+publicWidget = 0

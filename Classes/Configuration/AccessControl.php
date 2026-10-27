@@ -7,21 +7,17 @@ namespace ByteBuilders\T3ClickMark\Configuration;
 use ByteBuilders\T3ClickMark\Service\PlatformFeatureService;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Configuration\ExtensionConfiguration;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Central reader for the ClickMark access-control configuration.
  *
- * Free tier defaults:
- *   - publicWidget = false → widget is only available to authenticated
- *     backend users that have the ClickMark module permission
- *   - allowedBackendUsers = "" → all backend users with ClickMark module
- *     access can use the widget
- *
- * Pro feature: if the t3clickmark_pro extension is installed, its Extension
- * Configuration may override both values. Free users cannot change these
- * settings; the configuration fields only exist in the Pro extension.
+ * Both values live in the t3clickmark Extension Configuration:
+ *   - publicWidget = false (default) → widget is only available to
+ *     authenticated backend users that have the ClickMark module permission.
+ *     Enabling it additionally requires an eligible platform plan.
+ *   - allowedBackendUsers = "" (default) → all backend users with ClickMark
+ *     module access can use the widget
  */
 class AccessControl
 {
@@ -29,13 +25,13 @@ class AccessControl
      * Returns true when the widget should be injected for every frontend
      * visitor, regardless of backend authentication.
      *
-     * Requires BOTH the Pro extension setting AND the platform plan (the plan
-     * is the paywall — installing Pro without an eligible plan unlocks
-     * nothing). Free installs always return false.
+     * Requires BOTH the extension setting AND the platform plan (the plan
+     * is the paywall — enabling the setting without an eligible plan unlocks
+     * nothing).
      */
     public static function isPublicWidgetEnabled(): bool
     {
-        if (!(bool) self::readProConfig('publicWidget', false)) {
+        if (!(bool) self::readConfig('publicWidget', false)) {
             return false;
         }
 
@@ -46,12 +42,10 @@ class AccessControl
      * Returns the comma-separated list of backend usernames that may use
      * ClickMark, exactly as configured. An empty string means "all backend
      * users with ClickMark module access".
-     *
-     * Only Pro installs can override this. Free installs always return "".
      */
     public static function getAllowedBackendUsers(): string
     {
-        return trim((string) self::readProConfig('allowedBackendUsers', ''));
+        return trim((string) self::readConfig('allowedBackendUsers', ''));
     }
 
     /**
@@ -62,14 +56,14 @@ class AccessControl
      *   - allowedBackendUsers list empty:
      *       admins → always allowed
      *       others → allowed when they have the t3clickmark module permission
-     *   - allowedBackendUsers list set (Pro):
+     *   - allowedBackendUsers list set:
      *       strict whitelist — only users on the list, admin status is ignored
      *
      * When the whitelist is configured, admins who are not on the list lose
      * access too. This is intentional (variant "C"): once you turn on the
      * whitelist, you opt into full control. Make sure to include the admins
      * that should keep access; otherwise they can recover by clearing the
-     * value in the t3clickmark_pro extension configuration via CLI or DB.
+     * value in the t3clickmark extension configuration via CLI or DB.
      */
     public static function hasBackendUserAccess(?BackendUserAuthentication $backendUser): bool
     {
@@ -80,7 +74,7 @@ class AccessControl
         $allowedUsers = self::getAllowedBackendUsers();
 
         if ($allowedUsers === '') {
-            // No Pro whitelist — fall back to standard TYPO3 module permissions.
+            // No whitelist — fall back to standard TYPO3 module permissions.
             // Admins keep their normal blanket access here.
             if ($backendUser->isAdmin()) {
                 return true;
@@ -94,21 +88,17 @@ class AccessControl
     }
 
     /**
-     * Reads a Pro extension configuration key with a fallback default.
-     * Returns the default if the Pro extension is not installed or the key
-     * is missing.
+     * Reads a t3clickmark extension configuration key with a fallback
+     * default. Returns the default if the key is missing or the
+     * configuration cannot be read.
      *
      * @return mixed
      */
-    private static function readProConfig(string $key, $default)
+    private static function readConfig(string $key, $default)
     {
-        if (!ExtensionManagementUtility::isLoaded('t3clickmark_pro')) {
-            return $default;
-        }
-
         try {
             $config = GeneralUtility::makeInstance(ExtensionConfiguration::class)
-                ->get('t3clickmark_pro');
+                ->get('t3clickmark');
             return $config[$key] ?? $default;
         } catch (\Throwable $e) {
             return $default;
