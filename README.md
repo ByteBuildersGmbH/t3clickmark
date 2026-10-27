@@ -55,6 +55,10 @@ In Admin Tools > Settings > Extension Configuration > T3ClickMark:
 | **Allowed Backend Users** | Comma-separated usernames to restrict access (empty = all users) |
 | **Public Widget** | Enable widget for all visitors without backend login |
 
+### Scheduled synchronisation
+
+With an API key set, add a scheduler task (System > Scheduler > "Execute console commands") for `clickmark:sync`, running every 5 minutes (or a cron entry `vendor/bin/typo3 clickmark:sync`). It delivers feedback that has not reached the platform yet (e.g. after an outage) and pulls status changes, new tickets and comments back into TYPO3 — without anyone having to open the backend module. A failed run (platform unreachable, delivery errors) is reported as failed in the scheduler; `-v` lists the error per feedback item.
+
 ## Links
 
 - **Website**: [clickmark.it](https://clickmark.it)

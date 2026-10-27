@@ -13,7 +13,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
  * Syncs feedback statuses and comments from AgencyDesk back into TYPO3.
- * Called on backend module load to keep local records up-to-date.
+ * Called on backend module load and by the `clickmark:sync` console command
+ * (scheduler) to keep local records up-to-date.
  *
  * The source URL is resolved via PlatformEndpoint::getApiEndpoint()
  * (fixed: https://app.clickmark.it/api/v1).
@@ -24,22 +25,40 @@ class AgencyDeskSyncService
     private const REGISTRY_KEY = 'last_sync_timestamp';
     private const MIN_SYNC_INTERVAL = 60; // seconds — don't sync more than once per minute
 
+    public const RESULT_OK = 'ok';
+    public const RESULT_NOT_CONFIGURED = 'not_configured';
+    public const RESULT_RATE_LIMITED = 'rate_limited';
+    public const RESULT_ERROR = 'error';
+
     /**
      * Sync statuses from AgencyDesk. Returns number of updated records.
-     * Silently returns 0 if not configured or sync interval hasn't elapsed.
+     * Silently returns 0 if not configured, the sync interval hasn't elapsed,
+     * or the platform could not be reached (backend module must never break).
      */
     public function syncFromAgencyDesk(): int
     {
+        return $this->sync()['updated'];
+    }
+
+    /**
+     * Pull status changes, new tickets and comments from the platform and report
+     * the outcome (used by the `clickmark:sync` console command).
+     *
+     * @return array{result: string, updated: int, error: string}
+     *         result is one of the RESULT_* constants; error is set for RESULT_ERROR.
+     */
+    public function sync(): array
+    {
         $apiKey = $this->getApiKey();
         if ($apiKey === null) {
-            return 0;
+            return ['result' => self::RESULT_NOT_CONFIGURED, 'updated' => 0, 'error' => ''];
         }
 
         // Rate limit: don't sync more than once per minute
         $registry = GeneralUtility::makeInstance(Registry::class);
         $lastSync = (int)$registry->get(self::REGISTRY_NAMESPACE, self::REGISTRY_KEY, 0);
         if (time() - $lastSync < self::MIN_SYNC_INTERVAL) {
-            return 0;
+            return ['result' => self::RESULT_RATE_LIMITED, 'updated' => 0, 'error' => ''];
         }
 
         $lastSyncIso = $lastSync > 0
@@ -53,16 +72,18 @@ class AgencyDeskSyncService
                 'GET',
                 [
                     'headers' => ['X-API-Key' => $apiKey],
+                    // Non-2xx responses are reported below instead of thrown.
+                    'http_errors' => false,
                 ]
             );
 
             if ($response->getStatusCode() !== 200) {
-                return 0;
+                return ['result' => self::RESULT_ERROR, 'updated' => 0, 'error' => 'HTTP ' . $response->getStatusCode()];
             }
 
             $remoteFeedbacks = json_decode((string)$response->getBody(), true);
             if (!is_array($remoteFeedbacks)) {
-                return 0;
+                return ['result' => self::RESULT_ERROR, 'updated' => 0, 'error' => 'Invalid JSON response'];
             }
 
             $count = $this->applyUpdates($apiKey, $remoteFeedbacks);
@@ -70,10 +91,9 @@ class AgencyDeskSyncService
             // Update last sync timestamp
             $registry->set(self::REGISTRY_NAMESPACE, self::REGISTRY_KEY, time());
 
-            return $count;
+            return ['result' => self::RESULT_OK, 'updated' => $count, 'error' => ''];
         } catch (\Throwable $e) {
-            // Don't break the module if sync fails
-            return 0;
+            return ['result' => self::RESULT_ERROR, 'updated' => 0, 'error' => $e->getMessage()];
         }
     }
 
