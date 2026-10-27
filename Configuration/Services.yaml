@@ -7,6 +7,24 @@ services:
   ByteBuilders\T3ClickMark\:
     resource: '../Classes/*'
 
+  # Console commands. Registered via the console.command tag — support for
+  # Configuration/Commands.php was removed in TYPO3 v11, so this tag is the only
+  # thing that makes the commands exist in the CLI and (schedulable: true)
+  # selectable in the Scheduler task "Execute console commands".
+  ByteBuilders\T3ClickMark\Command\SyncCommand:
+    tags:
+      - name: console.command
+        command: 'clickmark:sync'
+        description: 'Synchronise feedback with the ClickMark platform (push undelivered feedback, pull status changes and comments).'
+        schedulable: true
+
+  ByteBuilders\T3ClickMark\Command\DeliverPendingFeedbackCommand:
+    tags:
+      - name: console.command
+        command: 'clickmark:deliver-pending'
+        description: 'Re-deliver feedback that failed to reach the ClickMark platform (see also clickmark:sync).'
+        schedulable: true
+
   ByteBuilders\T3ClickMark\ContextMenu\ClickMarkItemProvider:
     tags:
       - name: backend.contextmenu.itemprovider

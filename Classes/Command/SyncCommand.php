@@ -26,7 +26,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  * Exits non-zero only on real failures (deliveries failed, platform unreachable),
  * so the scheduler flags the run.
  *
- * Registered in Configuration/Commands.php as `clickmark:sync` (schedulable).
+ * Registered in Configuration/Services.yaml as `clickmark:sync` (schedulable).
  */
 final class SyncCommand extends Command
 {
